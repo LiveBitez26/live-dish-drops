@@ -9,8 +9,10 @@ import { ChatTicker } from "@/components/livebite/ChatTicker";
 import { CREATORS, getCreator } from "@/lib/livebite-data";
 import { cartStore } from "@/lib/cart-store";
 
+import type { Creator } from "@/lib/livebite-data";
+
 export const Route = createFileRoute("/live/$id")({
-  loader: ({ params }) => {
+  loader: ({ params }): { creator: Creator } => {
     const creator = CREATORS.find((c) => c.id === params.id);
     if (!creator) throw notFound();
     return { creator };
