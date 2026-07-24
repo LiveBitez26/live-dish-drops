@@ -132,7 +132,7 @@ function LiveView() {
 
           {tab === "menu" ? (
             <div className="space-y-3">
-              {creator.menu.map((m) => {
+              {creator.menu.map((m: typeof creator.menu[number]) => {
                 const pct = Math.round(((m.total - m.left) / m.total) * 100);
                 return (
                   <div
