@@ -86,6 +86,23 @@ function StudioDashboard() {
     const supabase = getSupabaseBrowserClient();
 
     if (!live) {
+      // 0. Safety: end any stream this creator left "live" in the DB from
+      // another device/tab before starting a fresh one — otherwise viewers
+      // can land on a stale channel nobody is actually publishing to.
+      const { data: stale } = await supabase
+        .from("live_streams")
+        .select("id")
+        .eq("creator_id", creatorId)
+        .eq("status", "live");
+      if (stale && stale.length > 0) {
+        await supabase
+          .from("live_streams")
+          .update({ status: "ended", ended_at: new Date().toISOString() })
+          .eq("creator_id", creatorId)
+          .eq("status", "live");
+        toast("Ended a previous session on another device before going live here.");
+      }
+
       // 1. create the live_streams row first — its id becomes the Agora channel name
       const { data: stream, error } = await supabase
         .from("live_streams")
