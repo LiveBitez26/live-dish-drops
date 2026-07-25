@@ -99,7 +99,7 @@ function StudioDashboard() {
   const revenue = orders.reduce((s, o) => s + o.price * o.qty, 0);
 
   return (
-    <div className="min-h-screen bg-background pb-24 md:pb-10">
+    <div className="theme-dark min-h-screen bg-background pb-24 md:pb-10">
       <AppHeader />
 
       <main className="mx-auto max-w-6xl px-4 py-5">
