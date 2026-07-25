@@ -18,7 +18,12 @@ export const signUp = createServerFn({ method: "POST" })
       password: data.password,
       options: { data: { full_name: data.fullName } },
     });
-    if (error) throw new Error(error.message);
+    if (error) {
+      if (error.message.toLowerCase().includes("already registered")) {
+        throw new Error("An account with this email already exists — try logging in instead.");
+      }
+      throw new Error(error.message);
+    }
 
     // profiles.role defaults to 'customer' via the DB trigger; bump it to
     // 'creator' here if they signed up as one.

@@ -38,19 +38,30 @@ function SignupPage() {
       await signUp(email, password, fullName, role);
 
       // If they signed up as a creator, also create their creators row now
-      // (the auth trigger only creates the base `profiles` row).
+      // (the auth trigger only creates the base `profiles` row). Upsert
+      // instead of insert — if this account already has a creators row
+      // (e.g. a retried/duplicate signup attempt), update it instead of
+      // failing on the unique constraint.
       if (role === "creator") {
         const supabase = getSupabaseBrowserClient();
         const { data: userData } = await supabase.auth.getUser();
         if (userData.user) {
-          const { error } = await supabase.from("creators").insert({
-            profile_id: userData.user.id,
-            handle: handle.trim().replace(/\s+/g, ""),
-            kitchen_type: kitchenType,
-            business_name: businessName.trim() || null,
-            permit_number: permitNumber.trim() || null,
-          });
-          if (error) throw new Error(error.message);
+          const { error } = await supabase.from("creators").upsert(
+            {
+              profile_id: userData.user.id,
+              handle: handle.trim().replace(/\s+/g, ""),
+              kitchen_type: kitchenType,
+              business_name: businessName.trim() || null,
+              permit_number: permitNumber.trim() || null,
+            },
+            { onConflict: "profile_id" },
+          );
+          if (error) {
+            if (error.message.includes("handle")) {
+              throw new Error("That handle is already taken — try a different one.");
+            }
+            throw new Error(error.message);
+          }
         }
       }
 
