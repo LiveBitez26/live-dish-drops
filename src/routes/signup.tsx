@@ -16,6 +16,9 @@ function SignupPage() {
   const [role, setRole] = useState<"customer" | "creator">("customer");
   const [fullName, setFullName] = useState("");
   const [handle, setHandle] = useState("");
+  const [kitchenType, setKitchenType] = useState("");
+  const [businessName, setBusinessName] = useState("");
+  const [permitNumber, setPermitNumber] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -24,6 +27,10 @@ function SignupPage() {
     e.preventDefault();
     if (password.length < 8) {
       toast.error("Password must be at least 8 characters");
+      return;
+    }
+    if (role === "creator" && !kitchenType) {
+      toast.error("Please select your kitchen type");
       return;
     }
     setLoading(true);
@@ -39,12 +46,20 @@ function SignupPage() {
           const { error } = await supabase.from("creators").insert({
             profile_id: userData.user.id,
             handle: handle.trim().replace(/\s+/g, ""),
+            kitchen_type: kitchenType,
+            business_name: businessName.trim() || null,
+            permit_number: permitNumber.trim() || null,
           });
           if (error) throw new Error(error.message);
         }
       }
 
-      toast.success("Welcome to LiveBite!");
+      toast.success(
+        role === "creator" ? "Application submitted!" : "Welcome to LiveBite!",
+        role === "creator"
+          ? { description: "We'll review your kitchen details before you can go live." }
+          : undefined,
+      );
       navigate({ to: role === "creator" ? "/studio" : "/" });
     } catch (err) {
       toast.error("Sign up failed", { description: (err as Error).message });
@@ -101,21 +116,70 @@ function SignupPage() {
           </div>
 
           {role === "creator" && (
-            <div>
-              <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                Handle
-              </label>
-              <input
-                required
-                value={handle}
-                onChange={(e) => setHandle(e.target.value)}
-                className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-foreground"
-                placeholder="ChefJane"
-              />
-              <p className="mt-1 text-xs text-muted-foreground">
-                Shown to customers as @{handle || "yourhandle"}
-              </p>
-            </div>
+            <>
+              <div>
+                <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                  Handle
+                </label>
+                <input
+                  required
+                  value={handle}
+                  onChange={(e) => setHandle(e.target.value)}
+                  className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-foreground"
+                  placeholder="ChefJane"
+                />
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Shown to customers as @{handle || "yourhandle"}
+                </p>
+              </div>
+
+              <div>
+                <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                  Kitchen type
+                </label>
+                <select
+                  required
+                  value={kitchenType}
+                  onChange={(e) => setKitchenType(e.target.value)}
+                  className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-foreground"
+                >
+                  <option value="" disabled>
+                    Select one…
+                  </option>
+                  <option value="licensed_commercial">Licensed commercial kitchen</option>
+                  <option value="food_truck">Food truck</option>
+                  <option value="ghost_kitchen">Ghost kitchen</option>
+                  <option value="home_kitchen">Home kitchen (cottage food)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                  Business name <span className="normal-case text-muted-foreground">(optional)</span>
+                </label>
+                <input
+                  value={businessName}
+                  onChange={(e) => setBusinessName(e.target.value)}
+                  className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-foreground"
+                  placeholder="Marco's Birria Co."
+                />
+              </div>
+
+              <div>
+                <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                  Health permit / cottage food registration number
+                </label>
+                <input
+                  value={permitNumber}
+                  onChange={(e) => setPermitNumber(e.target.value)}
+                  className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-foreground"
+                  placeholder="e.g. LA-2026-00123"
+                />
+                <p className="mt-1 text-xs text-muted-foreground">
+                  We'll verify this before you're able to go live. You can add it later if you don't have it handy yet.
+                </p>
+              </div>
+            </>
           )}
 
           <div>

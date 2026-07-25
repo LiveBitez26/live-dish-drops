@@ -78,7 +78,7 @@ export const getCurrentUser = createServerFn({ method: "GET" }).handler(async ()
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("*, creators(id, handle, is_live)")
+    .select("*, creators(id, handle, is_live, verification_status)")
     .eq("id", userData.user.id)
     .single();
 

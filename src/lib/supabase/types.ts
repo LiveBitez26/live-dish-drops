@@ -41,6 +41,12 @@ export interface Database {
           is_live: boolean;
           stripe_account_id: string | null;
           stripe_onboarding_complete: boolean;
+          kitchen_type: "licensed_commercial" | "food_truck" | "ghost_kitchen" | "home_kitchen" | null;
+          business_name: string | null;
+          permit_number: string | null;
+          permit_expires_on: string | null;
+          verification_status: "pending" | "approved" | "rejected";
+          verification_notes: string | null;
           created_at: string;
         };
         Insert: Partial<Database["public"]["Tables"]["creators"]["Row"]> & { profile_id: string; handle: string };

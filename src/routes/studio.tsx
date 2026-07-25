@@ -47,6 +47,9 @@ export const Route = createFileRoute("/studio")({
 function StudioDashboard() {
   const { profile, loading: authLoading, isCreator } = useAuth();
   const creatorId = (profile as any)?.creators?.[0]?.id ?? (profile as any)?.creators?.id;
+  const verificationStatus =
+    (profile as any)?.creators?.[0]?.verification_status ?? (profile as any)?.creators?.verification_status;
+  const isVerified = verificationStatus === "approved";
 
   useRequestNotificationPermission();
 
@@ -73,6 +76,12 @@ function StudioDashboard() {
 
   async function toggleLive() {
     if (!creatorId) return;
+    if (!isVerified) {
+      toast.error("Kitchen not verified yet", {
+        description: "We're reviewing your kitchen details — you'll be able to go live once approved.",
+      });
+      return;
+    }
     const supabase = getSupabaseBrowserClient();
 
     if (!live) {
@@ -176,6 +185,14 @@ function StudioDashboard() {
             Creator Studio
           </span>
         </div>
+
+        {!isVerified && (
+          <div className="mb-4 rounded-xl border border-yellow-600/40 bg-yellow-500/10 px-4 py-3 text-sm font-semibold text-yellow-500">
+            {verificationStatus === "rejected"
+              ? "Your kitchen application was not approved. Contact support for details."
+              : "Your kitchen details are pending review. You can build your menu, but you can't go live until you're approved."}
+          </div>
+        )}
 
         <div className="grid gap-5 lg:grid-cols-[1fr_360px]">
           {/* LEFT: Camera + controls */}
