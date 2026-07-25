@@ -142,10 +142,19 @@ function StudioDashboard() {
     return (
       <div className="theme-dark grid min-h-screen place-items-center bg-background px-4 text-center">
         <div>
-          <p className="text-lg font-bold">This page is for creators only.</p>
-          <Link to="/" className="mt-2 inline-block text-sm text-primary underline">
-            Back to LiveBite
-          </Link>
+          <p className="text-lg font-bold text-foreground">
+            {profile ? "This page is for creators only." : "Please log in as a creator to access the Studio."}
+          </p>
+          <div className="mt-3 flex justify-center gap-4">
+            {!profile && (
+              <Link to="/login" className="text-primary underline">
+                Log in
+              </Link>
+            )}
+            <Link to="/" className="text-primary underline">
+              Back to LiveBite
+            </Link>
+          </div>
         </div>
       </div>
     );
