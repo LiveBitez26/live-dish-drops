@@ -37,32 +37,32 @@
 
 :root {
   --radius: 0.875rem;
-  /* LiveBite dark-first palette */
-  --background: oklch(0.19 0.03 260);        /* deep slate #0F172A-ish */
-  --foreground: oklch(0.98 0.005 260);
-  --surface: oklch(0.235 0.03 260);
-  --surface-elevated: oklch(0.275 0.032 260);
-  --card: oklch(0.235 0.03 260);
-  --card-foreground: oklch(0.98 0.005 260);
-  --popover: oklch(0.235 0.03 260);
-  --popover-foreground: oklch(0.98 0.005 260);
-  --primary: oklch(0.74 0.19 55);            /* vibrant amber/orange #F97316 */
-  --primary-foreground: oklch(0.17 0.03 260);
-  --secondary: oklch(0.3 0.03 260);
-  --secondary-foreground: oklch(0.98 0.005 260);
-  --muted: oklch(0.28 0.028 260);
-  --muted-foreground: oklch(0.72 0.02 260);
-  --accent: oklch(0.74 0.19 55);
-  --accent-foreground: oklch(0.17 0.03 260);
-  --destructive: oklch(0.65 0.24 27);
-  --destructive-foreground: oklch(0.98 0.005 260);
-  --live: oklch(0.65 0.24 27);               /* neon red #EF4444 */
-  --live-foreground: oklch(0.98 0.005 260);
-  --border: oklch(0.32 0.03 260);
-  --input: oklch(0.3 0.03 260);
-  --ring: oklch(0.74 0.19 55);
-  --chart-1: oklch(0.74 0.19 55);
-  --chart-2: oklch(0.65 0.24 27);
+  /* LiveBite light palette — warm, food-friendly */
+  --background: oklch(0.985 0.005 250);       /* #F8FAFC crisp off-white */
+  --foreground: oklch(0.21 0.04 260);         /* #0F172A charcoal */
+  --surface: oklch(1 0 0);                    /* #FFFFFF cards */
+  --surface-elevated: oklch(1 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.21 0.04 260);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.21 0.04 260);
+  --primary: oklch(0.68 0.22 40);             /* #FF5E00 vibrant orange */
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.96 0.01 250);
+  --secondary-foreground: oklch(0.21 0.04 260);
+  --muted: oklch(0.96 0.01 250);
+  --muted-foreground: oklch(0.55 0.03 250);   /* #64748B medium slate */
+  --accent: oklch(0.68 0.22 40);
+  --accent-foreground: oklch(1 0 0);
+  --destructive: oklch(0.62 0.24 27);
+  --destructive-foreground: oklch(1 0 0);
+  --live: oklch(0.62 0.24 27);                /* #EF4444 neon red */
+  --live-foreground: oklch(1 0 0);
+  --border: oklch(0.91 0.01 250);             /* #E2E8F0 */
+  --input: oklch(0.91 0.01 250);
+  --ring: oklch(0.68 0.22 40);
+  --chart-1: oklch(0.68 0.22 40);
+  --chart-2: oklch(0.62 0.24 27);
   --chart-3: oklch(0.7 0.17 155);
   --chart-4: oklch(0.68 0.18 300);
   --chart-5: oklch(0.78 0.16 90);
