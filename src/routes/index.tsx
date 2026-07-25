@@ -1,9 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { Flame, Clock, Users, ChevronRight, Play } from "lucide-react";
+import { toast } from "sonner";
+import { Flame, Clock, Users, ChevronRight, Play, Heart, MessageCircle, Bell, Camera } from "lucide-react";
 import { AppHeader } from "@/components/livebite/AppHeader";
 import { CartBanner } from "@/components/livebite/CartBanner";
-import { CATEGORIES, CREATORS } from "@/lib/livebite-data";
+import { CATEGORIES, CREATORS, DAILY_FEED } from "@/lib/livebite-data";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -28,6 +30,7 @@ export const Route = createFileRoute("/")({
 });
 
 function Discover() {
+  const [tab, setTab] = useState<"live" | "feed">("live");
   const [cat, setCat] = useState("All Drops");
   const filtered =
     cat === "All Drops" ? CREATORS : CREATORS.filter((c) => c.category === cat);
@@ -38,6 +41,66 @@ function Discover() {
       <AppHeader />
 
       <main className="mx-auto max-w-6xl px-4 py-6">
+        {/* Segmented tab switcher */}
+        <div className="mb-6 flex rounded-full border border-border bg-surface p-1 shadow-sm">
+          <TabButton active={tab === "live"} onClick={() => setTab("live")}>
+            🔥 Live Drops
+          </TabButton>
+          <TabButton active={tab === "feed"} onClick={() => setTab("feed")}>
+            📸 Daily Feed
+          </TabButton>
+        </div>
+
+        {tab === "live" ? (
+          <LiveDropsView cat={cat} setCat={setCat} filtered={filtered} hero={hero} />
+        ) : (
+          <DailyFeedView />
+        )}
+      </main>
+
+      <CartBanner />
+    </div>
+  );
+}
+
+function TabButton({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={cn(
+        "flex-1 rounded-full px-4 py-2 text-sm font-bold transition",
+        active
+          ? "bg-primary text-primary-foreground shadow-sm"
+          : "text-muted-foreground hover:text-foreground"
+      )}
+    >
+      {children}
+    </button>
+  );
+}
+
+function LiveDropsView({
+  cat,
+  setCat,
+  filtered,
+  hero,
+}: {
+  cat: string;
+  setCat: (c: string) => void;
+  filtered: typeof CREATORS;
+  hero: typeof CREATORS;
+}) {
+  return (
+    <>
+
         {/* Hero: Live Drops Happening Now */}
         <section className="mb-8">
           <div className="mb-4 flex items-end justify-between gap-4">
