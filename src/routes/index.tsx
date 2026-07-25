@@ -395,9 +395,14 @@ function FeedCard({ post, onOpenComments }: { post: DailyPost; onOpenComments: (
             <span className="flex items-center gap-1">
               <Heart className="h-3 w-3" /> {post.likes.toLocaleString()}
             </span>
-            <span className="flex items-center gap-1">
+            <button
+              onClick={onOpenComments}
+              className="flex items-center gap-1 hover:text-primary"
+              aria-label="Open comments"
+            >
               <MessageCircle className="h-3 w-3" /> {post.comments}
-            </span>
+            </button>
+
           </div>
           {isDrop ? (
             <button
