@@ -1,0 +1,133 @@
+// Hand-written to match supabase/migrations/0001_init_schema.sql.
+// Once your project is linked, regenerate the real thing with:
+//   npx supabase gen types typescript --linked > src/lib/supabase/types.ts
+
+export type OrderStatus =
+  | "pending"
+  | "accepted"
+  | "declined"
+  | "preparing"
+  | "out_for_delivery"
+  | "delivered";
+
+export type StreamStatus = "scheduled" | "live" | "ended";
+export type PostContentType = "photo" | "video" | "upcoming_drop";
+export type ProfileRole = "customer" | "creator";
+
+export interface Database {
+  public: {
+    Tables: {
+      profiles: {
+        Row: {
+          id: string;
+          email: string;
+          role: ProfileRole;
+          full_name: string | null;
+          avatar_url: string | null;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["profiles"]["Row"]> & { id: string; email: string };
+        Update: Partial<Database["public"]["Tables"]["profiles"]["Row"]>;
+      };
+      creators: {
+        Row: {
+          id: string;
+          profile_id: string;
+          handle: string;
+          bio: string | null;
+          follower_count: number;
+          rating: number;
+          location: string | null;
+          is_live: boolean;
+          stripe_account_id: string | null;
+          stripe_onboarding_complete: boolean;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["creators"]["Row"]> & { profile_id: string; handle: string };
+        Update: Partial<Database["public"]["Tables"]["creators"]["Row"]>;
+      };
+      menu_items: {
+        Row: {
+          id: string;
+          creator_id: string;
+          name: string;
+          description: string | null;
+          price: number;
+          total_inventory: number;
+          remaining_inventory: number;
+          is_available: boolean;
+          image_url: string | null;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["menu_items"]["Row"]> & { creator_id: string; name: string; price: number };
+        Update: Partial<Database["public"]["Tables"]["menu_items"]["Row"]>;
+      };
+      live_streams: {
+        Row: {
+          id: string;
+          creator_id: string;
+          stream_key: string;
+          playback_url: string | null;
+          title: string | null;
+          status: StreamStatus;
+          started_at: string | null;
+          ended_at: string | null;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["live_streams"]["Row"]> & { creator_id: string };
+        Update: Partial<Database["public"]["Tables"]["live_streams"]["Row"]>;
+      };
+      posts: {
+        Row: {
+          id: string;
+          creator_id: string;
+          content_type: PostContentType;
+          media_url: string | null;
+          caption: string | null;
+          drop_time: string | null;
+          price: number | null;
+          likes_count: number;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["posts"]["Row"]> & { creator_id: string; content_type: PostContentType };
+        Update: Partial<Database["public"]["Tables"]["posts"]["Row"]>;
+      };
+      post_comments: {
+        Row: {
+          id: string;
+          post_id: string;
+          author_id: string;
+          body: string;
+          created_at: string;
+        };
+        Insert: { post_id: string; author_id: string; body: string };
+        Update: Partial<Database["public"]["Tables"]["post_comments"]["Row"]>;
+      };
+      orders: {
+        Row: {
+          id: string;
+          customer_id: string;
+          creator_id: string;
+          items: { menu_item_id: string; name: string; qty: number; unit_price: number }[];
+          total_amount: number;
+          platform_fee_amount: number;
+          creator_payout_amount: number;
+          status: OrderStatus;
+          stripe_payment_intent_id: string | null;
+          stripe_checkout_session_id: string | null;
+          doordash_delivery_id: string | null;
+          delivery_address: Record<string, unknown> | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["orders"]["Row"]> & {
+          customer_id: string;
+          creator_id: string;
+          items: Database["public"]["Tables"]["orders"]["Row"]["items"];
+          total_amount: number;
+        };
+        Update: Partial<Database["public"]["Tables"]["orders"]["Row"]>;
+      };
+    };
+  };
+}
