@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { getAgoraToken } from "@/lib/api/agora";
 
 type BroadcastState = "idle" | "connecting" | "live" | "error";
@@ -26,16 +27,24 @@ export function useAgoraBroadcast() {
       const client = AgoraRTC.createClient({ mode: "live", codec: "vp8" });
       await client.setClientRole("host");
       await client.join(appId, channelName, token, uid);
+      toast("Connected to broadcast server…");
 
       const [audioTrack, videoTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
+      toast("Camera & mic captured…");
       videoTrack.play(previewEl);
+
       await client.publish([audioTrack, videoTrack]);
+      toast.success("Publishing video to viewers now");
 
       clientRef.current = client;
       tracksRef.current = { audio: audioTrack, video: videoTrack };
       setState("live");
     } catch (err) {
       console.error("Agora broadcast failed to start:", err);
+      toast.error("Broadcast failed to start", {
+        description: (err as Error).message || String(err),
+        duration: 15000,
+      });
       setState("error");
     }
   }

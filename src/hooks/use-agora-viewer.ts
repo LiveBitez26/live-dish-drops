@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { getAgoraToken } from "@/lib/api/agora";
 
 type ViewerState = "idle" | "connecting" | "watching" | "ended" | "error";
@@ -27,6 +28,7 @@ export function useAgoraViewer(channelName: string | undefined, videoRef: React.
         await client.setClientRole("audience");
 
         client.on("user-published", async (user: any, mediaType: "audio" | "video") => {
+          toast(`Received ${mediaType} from creator`);
           await client.subscribe(user, mediaType);
           if (mediaType === "video" && videoRef.current && !cancelled) {
             user.videoTrack?.play(videoRef.current);
@@ -42,9 +44,14 @@ export function useAgoraViewer(channelName: string | undefined, videoRef: React.
         });
 
         await client.join(appId, channelName!, token, uid);
+        toast(`Joined channel — waiting for creator's video…`);
         clientRef.current = client;
       } catch (err) {
         console.error("Agora viewer join failed:", err);
+        toast.error("Couldn't join stream", {
+          description: (err as Error).message || String(err),
+          duration: 15000,
+        });
         if (!cancelled) setState("error");
       }
     }
