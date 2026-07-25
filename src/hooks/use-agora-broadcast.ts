@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { getAgoraToken } from "@/lib/server/agora";
+import { getAgoraToken } from "@/lib/api/agora";
 
 type BroadcastState = "idle" | "connecting" | "live" | "error";
 

@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
-import { dispatchDoorDashDelivery } from "@/lib/server/doordash";
+import { dispatchDoorDashDelivery } from "@/lib/api/doordash";
 
 const updateStatusSchema = z.object({
   orderId: z.string().uuid(),

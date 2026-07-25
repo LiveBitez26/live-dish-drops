@@ -8,7 +8,7 @@ import { ChatTicker } from "@/components/livebite/ChatTicker";
 import { LiveVideoPlayer } from "@/components/LiveVideoPlayer";
 import { cartStore } from "@/lib/cart-store";
 import { useMenuItems } from "@/hooks/use-menu-items";
-import { getCreatorPageData } from "@/lib/server/creators";
+import { getCreatorPageData } from "@/lib/api/creators";
 
 export const Route = createFileRoute("/live/$id")({
   loader: ({ params }) => getCreatorPageData({ data: { creatorId: params.id } }),

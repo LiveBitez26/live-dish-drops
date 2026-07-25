@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
-import { getCurrentUser, signIn, signOut, signUp } from "@/lib/server/auth";
+import { getCurrentUser, signIn, signOut, signUp } from "@/lib/api/auth";
 
 type Profile = Awaited<ReturnType<typeof getCurrentUser>>;
 

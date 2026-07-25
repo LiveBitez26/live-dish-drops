@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import Stripe from "stripe";
 import { z } from "zod";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
-import { createOrder } from "@/lib/server/orders";
+import { createOrder } from "@/lib/api/orders";
 
 function getStripe() {
   return new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: "2024-12-18.acacia" });

@@ -19,7 +19,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useMenuItems, setMenuItemAvailability } from "@/hooks/use-menu-items";
 import { useRealtimeOrders, useRequestNotificationPermission } from "@/hooks/use-realtime-orders";
 import { useAgoraBroadcast } from "@/hooks/use-agora-broadcast";
-import { updateOrderStatus } from "@/lib/server/orders";
+import { updateOrderStatus } from "@/lib/api/orders";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useRef } from "react";
 

@@ -14,6 +14,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as OrderIdRouteImport } from './routes/order.$id'
 import { Route as LiveIdRouteImport } from './routes/live.$id'
 import { Route as CreatorIdRouteImport } from './routes/creator.$id'
+import { Route as ApiStripeWebhookRouteImport } from './routes/api/stripe/webhook'
 
 const StudioRoute = StudioRouteImport.update({
   id: '/studio',
@@ -40,6 +41,11 @@ const CreatorIdRoute = CreatorIdRouteImport.update({
   path: '/creator/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiStripeWebhookRoute = ApiStripeWebhookRouteImport.update({
+  id: '/api/stripe/webhook',
+  path: '/api/stripe/webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -47,6 +53,7 @@ export interface FileRoutesByFullPath {
   '/creator/$id': typeof CreatorIdRoute
   '/live/$id': typeof LiveIdRoute
   '/order/$id': typeof OrderIdRoute
+  '/api/stripe/webhook': typeof ApiStripeWebhookRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -54,6 +61,7 @@ export interface FileRoutesByTo {
   '/creator/$id': typeof CreatorIdRoute
   '/live/$id': typeof LiveIdRoute
   '/order/$id': typeof OrderIdRoute
+  '/api/stripe/webhook': typeof ApiStripeWebhookRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -62,13 +70,33 @@ export interface FileRoutesById {
   '/creator/$id': typeof CreatorIdRoute
   '/live/$id': typeof LiveIdRoute
   '/order/$id': typeof OrderIdRoute
+  '/api/stripe/webhook': typeof ApiStripeWebhookRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/studio' | '/creator/$id' | '/live/$id' | '/order/$id'
+  fullPaths:
+    | '/'
+    | '/studio'
+    | '/creator/$id'
+    | '/live/$id'
+    | '/order/$id'
+    | '/api/stripe/webhook'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/studio' | '/creator/$id' | '/live/$id' | '/order/$id'
-  id: '__root__' | '/' | '/studio' | '/creator/$id' | '/live/$id' | '/order/$id'
+  to:
+    | '/'
+    | '/studio'
+    | '/creator/$id'
+    | '/live/$id'
+    | '/order/$id'
+    | '/api/stripe/webhook'
+  id:
+    | '__root__'
+    | '/'
+    | '/studio'
+    | '/creator/$id'
+    | '/live/$id'
+    | '/order/$id'
+    | '/api/stripe/webhook'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -77,6 +105,7 @@ export interface RootRouteChildren {
   CreatorIdRoute: typeof CreatorIdRoute
   LiveIdRoute: typeof LiveIdRoute
   OrderIdRoute: typeof OrderIdRoute
+  ApiStripeWebhookRoute: typeof ApiStripeWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -116,6 +145,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CreatorIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/stripe/webhook': {
+      id: '/api/stripe/webhook'
+      path: '/api/stripe/webhook'
+      fullPath: '/api/stripe/webhook'
+      preLoaderRoute: typeof ApiStripeWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -125,7 +161,18 @@ const rootRouteChildren: RootRouteChildren = {
   CreatorIdRoute: CreatorIdRoute,
   LiveIdRoute: LiveIdRoute,
   OrderIdRoute: OrderIdRoute,
+  ApiStripeWebhookRoute: ApiStripeWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
