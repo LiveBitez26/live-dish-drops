@@ -74,6 +74,12 @@ function LoginPage() {
             Back to LiveBite
           </Link>
         </p>
+        <p className="mt-2 text-center text-sm text-muted-foreground">
+          New here?{" "}
+          <Link to="/signup" className="text-primary underline">
+            Create an account
+          </Link>
+        </p>
       </main>
     </div>
   );
