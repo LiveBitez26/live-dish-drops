@@ -4,8 +4,11 @@ import { toast } from "sonner";
 import { Flame, Clock, Users, ChevronRight, Play, Heart, MessageCircle, Bell, Camera } from "lucide-react";
 import { AppHeader } from "@/components/livebite/AppHeader";
 import { CartBanner } from "@/components/livebite/CartBanner";
+import { CommentDrawer } from "@/components/livebite/CommentDrawer";
 import { CATEGORIES, CREATORS, DAILY_FEED } from "@/lib/livebite-data";
+import type { DailyPost } from "@/lib/livebite-data";
 import { cn } from "@/lib/utils";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -279,6 +282,7 @@ function LiveDropsView({
 }
 
 function DailyFeedView() {
+  const [openPost, setOpenPost] = useState<DailyPost | null>(null);
   return (
     <section>
       <div className="mb-4 flex items-end justify-between gap-4">
@@ -297,14 +301,23 @@ function DailyFeedView() {
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
         {DAILY_FEED.map((p) => (
-          <FeedCard key={p.id} post={p} />
+          <FeedCard key={p.id} post={p} onOpenComments={() => setOpenPost(p)} />
         ))}
       </div>
+
+      <CommentDrawer
+        open={!!openPost}
+        onClose={() => setOpenPost(null)}
+        postHandle={openPost?.handle ?? ""}
+        postImage={openPost?.image ?? ""}
+        postCaption={openPost?.caption ?? ""}
+      />
     </section>
   );
 }
 
-function FeedCard({ post }: { post: (typeof DAILY_FEED)[number] }) {
+function FeedCard({ post, onOpenComments }: { post: DailyPost; onOpenComments: () => void }) {
+
   const isDrop = post.kind === "drop";
   const isClip = post.kind === "clip";
   return (
@@ -337,16 +350,21 @@ function FeedCard({ post }: { post: (typeof DAILY_FEED)[number] }) {
         </div>
 
         {/* Creator */}
-        <div className="absolute inset-x-2 bottom-2 flex items-center gap-2">
+        <Link
+          to="/creator/$id"
+          params={{ id: post.creatorId }}
+          className="absolute inset-x-2 bottom-2 flex items-center gap-2"
+        >
           <img
             src={post.avatar}
             alt=""
             className="h-7 w-7 rounded-full border-2 border-white/90 object-cover"
           />
-          <span className="truncate text-xs font-bold text-white drop-shadow">
+          <span className="truncate text-xs font-bold text-white drop-shadow hover:underline">
             {post.handle}
           </span>
-        </div>
+        </Link>
+
       </div>
 
       <div className="space-y-2.5 p-3">
@@ -377,9 +395,14 @@ function FeedCard({ post }: { post: (typeof DAILY_FEED)[number] }) {
             <span className="flex items-center gap-1">
               <Heart className="h-3 w-3" /> {post.likes.toLocaleString()}
             </span>
-            <span className="flex items-center gap-1">
+            <button
+              onClick={onOpenComments}
+              className="flex items-center gap-1 hover:text-primary"
+              aria-label="Open comments"
+            >
               <MessageCircle className="h-3 w-3" /> {post.comments}
-            </span>
+            </button>
+
           </div>
           {isDrop ? (
             <button
