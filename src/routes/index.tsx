@@ -282,6 +282,7 @@ function LiveDropsView({
 }
 
 function DailyFeedView() {
+  const [openPost, setOpenPost] = useState<DailyPost | null>(null);
   return (
     <section>
       <div className="mb-4 flex items-end justify-between gap-4">
@@ -300,14 +301,23 @@ function DailyFeedView() {
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
         {DAILY_FEED.map((p) => (
-          <FeedCard key={p.id} post={p} />
+          <FeedCard key={p.id} post={p} onOpenComments={() => setOpenPost(p)} />
         ))}
       </div>
+
+      <CommentDrawer
+        open={!!openPost}
+        onClose={() => setOpenPost(null)}
+        postHandle={openPost?.handle ?? ""}
+        postImage={openPost?.image ?? ""}
+        postCaption={openPost?.caption ?? ""}
+      />
     </section>
   );
 }
 
-function FeedCard({ post }: { post: (typeof DAILY_FEED)[number] }) {
+function FeedCard({ post, onOpenComments }: { post: DailyPost; onOpenComments: () => void }) {
+
   const isDrop = post.kind === "drop";
   const isClip = post.kind === "clip";
   return (
