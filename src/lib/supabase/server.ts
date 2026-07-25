@@ -1,4 +1,5 @@
 import { createServerClient, parseCookieHeader, serializeCookieHeader } from "@supabase/ssr";
+import { getEnv } from "@/lib/env";
 import { createClient } from "@supabase/supabase-js";
 import { getRequestHeader, setResponseHeader } from "@tanstack/react-start/server";
 import type { Database } from "./types";
@@ -10,8 +11,8 @@ import type { Database } from "./types";
  */
 export function getSupabaseServerClient() {
   return createServerClient<Database>(
-    process.env.VITE_SUPABASE_URL!,
-    process.env.VITE_SUPABASE_ANON_KEY!,
+    getEnv("VITE_SUPABASE_URL")!,
+    getEnv("VITE_SUPABASE_ANON_KEY")!,
     {
       cookies: {
         getAll() {
@@ -38,8 +39,8 @@ export function getSupabaseServerClient() {
  */
 export function getSupabaseAdminClient() {
   return createClient<Database>(
-    process.env.VITE_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    getEnv("VITE_SUPABASE_URL")!,
+    getEnv("SUPABASE_SERVICE_ROLE_KEY")!,
     { auth: { persistSession: false, autoRefreshToken: false } },
   );
 }

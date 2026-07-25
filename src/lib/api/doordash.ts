@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken";
+import { getEnv } from "@/lib/env";
 import { getSupabaseAdminClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/types";
 
@@ -18,7 +19,7 @@ type Order = Database["public"]["Tables"]["orders"]["Row"];
  * Docs: https://developer.doordash.com/en-US/docs/drive/how-to/manage-deliveries/
  */
 export async function dispatchDoorDashDelivery(order: Order) {
-  if (!process.env.DOORDASH_DEVELOPER_ID) {
+  if (!getEnv("DOORDASH_DEVELOPER_ID")) {
     console.warn(`[doordash] Not configured — skipping dispatch for order ${order.id}`);
     return null;
   }
@@ -32,7 +33,7 @@ export async function dispatchDoorDashDelivery(order: Order) {
 
   const token = jwt.sign(
     {},
-    Buffer.from(process.env.DOORDASH_SIGNING_SECRET!, "base64"),
+    Buffer.from(getEnv("DOORDASH_SIGNING_SECRET")!, "base64"),
     {
       algorithm: "HS256",
       expiresIn: "5m",
@@ -41,8 +42,8 @@ export async function dispatchDoorDashDelivery(order: Order) {
         alg: "HS256",
         typ: "JWT",
       } as any,
-      issuer: process.env.DOORDASH_DEVELOPER_ID,
-      keyid: process.env.DOORDASH_KEY_ID,
+      issuer: getEnv("DOORDASH_DEVELOPER_ID"),
+      keyid: getEnv("DOORDASH_KEY_ID"),
     },
   );
 

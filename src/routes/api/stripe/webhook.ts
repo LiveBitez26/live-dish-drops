@@ -1,9 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import Stripe from "stripe";
+import { getEnv } from "@/lib/env";
 import { getSupabaseAdminClient } from "@/lib/supabase/server";
 
 function getStripe() {
-  return new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: "2024-12-18.acacia" });
+  return new Stripe(getEnv("STRIPE_SECRET_KEY")!, { apiVersion: "2024-12-18.acacia" });
 }
 
 export const Route = createFileRoute("/api/stripe/webhook")({
@@ -19,7 +20,7 @@ export const Route = createFileRoute("/api/stripe/webhook")({
           event = stripe.webhooks.constructEvent(
             rawBody,
             signature ?? "",
-            process.env.STRIPE_WEBHOOK_SECRET!,
+            getEnv("STRIPE_WEBHOOK_SECRET")!,
           );
         } catch (err) {
           console.error("Stripe webhook signature verification failed:", err);

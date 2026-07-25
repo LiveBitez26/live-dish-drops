@@ -1,10 +1,11 @@
 import { createServerFn } from "@tanstack/react-start";
 import Stripe from "stripe";
 import { z } from "zod";
+import { getEnv } from "@/lib/env";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 
 function getStripe() {
-  return new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: "2024-12-18.acacia" });
+  return new Stripe(getEnv("STRIPE_SECRET_KEY")!, { apiVersion: "2024-12-18.acacia" });
 }
 
 const onboardSchema = z.object({

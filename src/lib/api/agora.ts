@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { RtcRole, RtcTokenBuilder } from "agora-token";
 import { z } from "zod";
+import { getEnv } from "@/lib/env";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 
 const TOKEN_TTL_SECONDS = 60 * 60; // 1 hour; re-fetch on expiry from the client if a stream runs longer
@@ -35,8 +36,8 @@ export const getAgoraToken = createServerFn({ method: "POST" })
       }
     }
 
-    const appId = process.env.AGORA_APP_ID!;
-    const appCertificate = process.env.AGORA_APP_CERTIFICATE!;
+    const appId = getEnv("AGORA_APP_ID")!;
+    const appCertificate = getEnv("AGORA_APP_CERTIFICATE")!;
     const expireAt = Math.floor(Date.now() / 1000) + TOKEN_TTL_SECONDS;
 
     // Agora uids are numeric; derive a stable one from the user's UUID.
