@@ -7,8 +7,9 @@ const schema = z.object({ creatorId: z.string().uuid() });
 
 /**
  * Everything /live/$id and /creator/$id need in one round trip:
- * creator + owner profile, full menu, and the current live_streams row
- * (if any) so the page knows whether to show the video player.
+ * creator + owner profile, full menu, current live_streams row (if any),
+ * recent reviews, upcoming scheduled drops, and whether the current viewer
+ * follows this creator.
  */
 export const getCreatorPageData = createServerFn({ method: "GET" })
   .inputValidator(schema)
@@ -37,5 +38,38 @@ export const getCreatorPageData = createServerFn({ method: "GET" })
       .limit(1)
       .maybeSingle();
 
-    return { creator, menu: menu ?? [], activeStream };
+    const { data: reviews } = await supabase
+      .from("reviews")
+      .select("*, profiles(full_name)")
+      .eq("creator_id", data.creatorId)
+      .order("created_at", { ascending: false })
+      .limit(50);
+
+    const { data: upcomingDrops } = await supabase
+      .from("scheduled_drops")
+      .select("*")
+      .eq("creator_id", data.creatorId)
+      .gte("scheduled_at", new Date().toISOString())
+      .order("scheduled_at", { ascending: true });
+
+    const { data: userData } = await supabase.auth.getUser();
+    let isFollowing = false;
+    if (userData.user) {
+      const { data: followRow } = await supabase
+        .from("follows")
+        .select("creator_id")
+        .eq("follower_id", userData.user.id)
+        .eq("creator_id", data.creatorId)
+        .maybeSingle();
+      isFollowing = Boolean(followRow);
+    }
+
+    return {
+      creator,
+      menu: menu ?? [],
+      activeStream,
+      reviews: reviews ?? [],
+      upcomingDrops: upcomingDrops ?? [],
+      isFollowing,
+    };
   });

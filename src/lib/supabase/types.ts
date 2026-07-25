@@ -47,6 +47,8 @@ export interface Database {
           permit_expires_on: string | null;
           verification_status: "pending" | "approved" | "rejected";
           verification_notes: string | null;
+          banner_url: string | null;
+          delivery_radius_miles: number;
           created_at: string;
         };
         Insert: Partial<Database["public"]["Tables"]["creators"]["Row"]> & { profile_id: string; handle: string };
@@ -108,6 +110,36 @@ export interface Database {
         };
         Insert: { post_id: string; author_id: string; body: string };
         Update: Partial<Database["public"]["Tables"]["post_comments"]["Row"]>;
+      };
+      follows: {
+        Row: { follower_id: string; creator_id: string; created_at: string };
+        Insert: { follower_id: string; creator_id: string };
+        Update: Partial<{ follower_id: string; creator_id: string }>;
+      };
+      reviews: {
+        Row: {
+          id: string;
+          order_id: string;
+          customer_id: string;
+          creator_id: string;
+          rating: number;
+          body: string | null;
+          created_at: string;
+        };
+        Insert: { order_id: string; customer_id: string; creator_id: string; rating: number; body?: string | null };
+        Update: Partial<Database["public"]["Tables"]["reviews"]["Row"]>;
+      };
+      scheduled_drops: {
+        Row: {
+          id: string;
+          creator_id: string;
+          title: string;
+          description: string | null;
+          scheduled_at: string;
+          created_at: string;
+        };
+        Insert: { creator_id: string; title: string; description?: string | null; scheduled_at: string };
+        Update: Partial<Database["public"]["Tables"]["scheduled_drops"]["Row"]>;
       };
       orders: {
         Row: {
