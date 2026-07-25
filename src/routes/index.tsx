@@ -350,16 +350,21 @@ function FeedCard({ post, onOpenComments }: { post: DailyPost; onOpenComments: (
         </div>
 
         {/* Creator */}
-        <div className="absolute inset-x-2 bottom-2 flex items-center gap-2">
+        <Link
+          to="/creator/$id"
+          params={{ id: post.creatorId }}
+          className="absolute inset-x-2 bottom-2 flex items-center gap-2"
+        >
           <img
             src={post.avatar}
             alt=""
             className="h-7 w-7 rounded-full border-2 border-white/90 object-cover"
           />
-          <span className="truncate text-xs font-bold text-white drop-shadow">
+          <span className="truncate text-xs font-bold text-white drop-shadow hover:underline">
             {post.handle}
           </span>
-        </div>
+        </Link>
+
       </div>
 
       <div className="space-y-2.5 p-3">
