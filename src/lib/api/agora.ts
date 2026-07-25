@@ -13,18 +13,21 @@ const tokenSchema = z.object({
 
 /**
  * Mints a channel-scoped Agora RTC token.
- * - "host" tokens are only issued to the creator who owns that live_stream row.
- * - "audience" tokens are issued to anyone signed in (swap for anonymous
- *   uid-based tokens if you want unauthenticated viewers to be able to watch).
+ * - "host" tokens require a signed-in creator who owns that live_stream row.
+ * - "audience" tokens are issued to anyone, signed in or not — watching a
+ *   stream shouldn't require an account; only placing an order should.
  */
 export const getAgoraToken = createServerFn({ method: "POST" })
   .inputValidator(tokenSchema)
   .handler(async ({ data }) => {
     const supabase = getSupabaseServerClient();
     const { data: userData } = await supabase.auth.getUser();
-    if (!userData.user) throw new Error("UNAUTHENTICATED");
+
+    let uid: number;
 
     if (data.role === "host") {
+      if (!userData.user) throw new Error("UNAUTHENTICATED");
+
       const { data: stream, error } = await supabase
         .from("live_streams")
         .select("id, creator_id, creators!inner(profile_id)")
@@ -34,14 +37,16 @@ export const getAgoraToken = createServerFn({ method: "POST" })
       if ((stream as any).creators.profile_id !== userData.user.id) {
         throw new Error("FORBIDDEN");
       }
+      uid = hashToUint32(userData.user.id);
+    } else {
+      // Signed-in viewers get a stable uid derived from their user id;
+      // anonymous viewers get a random one scoped to this token request.
+      uid = userData.user ? hashToUint32(userData.user.id) : Math.floor(Math.random() * 2 ** 31) + 1;
     }
 
     const appId = getEnv("AGORA_APP_ID")!;
     const appCertificate = getEnv("AGORA_APP_CERTIFICATE")!;
     const expireAt = Math.floor(Date.now() / 1000) + TOKEN_TTL_SECONDS;
-
-    // Agora uids are numeric; derive a stable one from the user's UUID.
-    const uid = hashToUint32(userData.user.id);
 
     const token = RtcTokenBuilder.buildTokenWithUid(
       appId,
