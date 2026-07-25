@@ -13,6 +13,7 @@ import { Route as StudioRouteImport } from './routes/studio'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as OrderIdRouteImport } from './routes/order.$id'
 import { Route as LiveIdRouteImport } from './routes/live.$id'
+import { Route as CreatorIdRouteImport } from './routes/creator.$id'
 
 const StudioRoute = StudioRouteImport.update({
   id: '/studio',
@@ -34,16 +35,23 @@ const LiveIdRoute = LiveIdRouteImport.update({
   path: '/live/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CreatorIdRoute = CreatorIdRouteImport.update({
+  id: '/creator/$id',
+  path: '/creator/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/studio': typeof StudioRoute
+  '/creator/$id': typeof CreatorIdRoute
   '/live/$id': typeof LiveIdRoute
   '/order/$id': typeof OrderIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/studio': typeof StudioRoute
+  '/creator/$id': typeof CreatorIdRoute
   '/live/$id': typeof LiveIdRoute
   '/order/$id': typeof OrderIdRoute
 }
@@ -51,20 +59,22 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/studio': typeof StudioRoute
+  '/creator/$id': typeof CreatorIdRoute
   '/live/$id': typeof LiveIdRoute
   '/order/$id': typeof OrderIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/studio' | '/live/$id' | '/order/$id'
+  fullPaths: '/' | '/studio' | '/creator/$id' | '/live/$id' | '/order/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/studio' | '/live/$id' | '/order/$id'
-  id: '__root__' | '/' | '/studio' | '/live/$id' | '/order/$id'
+  to: '/' | '/studio' | '/creator/$id' | '/live/$id' | '/order/$id'
+  id: '__root__' | '/' | '/studio' | '/creator/$id' | '/live/$id' | '/order/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   StudioRoute: typeof StudioRoute
+  CreatorIdRoute: typeof CreatorIdRoute
   LiveIdRoute: typeof LiveIdRoute
   OrderIdRoute: typeof OrderIdRoute
 }
@@ -99,12 +109,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LiveIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/creator/$id': {
+      id: '/creator/$id'
+      path: '/creator/$id'
+      fullPath: '/creator/$id'
+      preLoaderRoute: typeof CreatorIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   StudioRoute: StudioRoute,
+  CreatorIdRoute: CreatorIdRoute,
   LiveIdRoute: LiveIdRoute,
   OrderIdRoute: OrderIdRoute,
 }

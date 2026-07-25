@@ -4,8 +4,11 @@ import { toast } from "sonner";
 import { Flame, Clock, Users, ChevronRight, Play, Heart, MessageCircle, Bell, Camera } from "lucide-react";
 import { AppHeader } from "@/components/livebite/AppHeader";
 import { CartBanner } from "@/components/livebite/CartBanner";
+import { CommentDrawer } from "@/components/livebite/CommentDrawer";
 import { CATEGORIES, CREATORS, DAILY_FEED } from "@/lib/livebite-data";
+import type { DailyPost } from "@/lib/livebite-data";
 import { cn } from "@/lib/utils";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
