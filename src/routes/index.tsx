@@ -274,9 +274,136 @@ function LiveDropsView({
             })}
           </div>
         </section>
-      </main>
-
-      <CartBanner />
-    </div>
+    </>
   );
 }
+
+function DailyFeedView() {
+  return (
+    <section>
+      <div className="mb-4 flex items-end justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-primary">
+            <Camera className="h-3.5 w-3.5" /> Fresh today
+          </div>
+          <h1 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">
+            Daily Feed
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Photos, teaser clips, and upcoming drops from your favorite creators.
+          </p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        {DAILY_FEED.map((p) => (
+          <FeedCard key={p.id} post={p} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function FeedCard({ post }: { post: (typeof DAILY_FEED)[number] }) {
+  const isDrop = post.kind === "drop";
+  const isClip = post.kind === "clip";
+  return (
+    <article className="group overflow-hidden rounded-2xl border border-border bg-surface shadow-sm transition hover:border-primary/50 hover:shadow-md">
+      <div className="relative aspect-[4/5] overflow-hidden">
+        <img
+          src={post.image}
+          alt={post.caption}
+          className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20" />
+
+        {/* Kind badge */}
+        <div className="absolute left-2 top-2 flex items-center gap-1">
+          {isClip && (
+            <span className="flex items-center gap-1 rounded-full bg-black/70 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-white backdrop-blur">
+              <Play className="h-2.5 w-2.5" /> {post.duration}
+            </span>
+          )}
+          {isDrop && (
+            <span className="rounded-full bg-primary px-2 py-0.5 text-[10px] font-black uppercase tracking-widest text-primary-foreground">
+              Upcoming
+            </span>
+          )}
+          {post.kind === "photo" && (
+            <span className="rounded-full bg-black/70 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-white backdrop-blur">
+              Photo
+            </span>
+          )}
+        </div>
+
+        {/* Creator */}
+        <div className="absolute inset-x-2 bottom-2 flex items-center gap-2">
+          <img
+            src={post.avatar}
+            alt=""
+            className="h-7 w-7 rounded-full border-2 border-white/90 object-cover"
+          />
+          <span className="truncate text-xs font-bold text-white drop-shadow">
+            {post.handle}
+          </span>
+        </div>
+      </div>
+
+      <div className="space-y-2.5 p-3">
+        <p className="line-clamp-2 text-xs font-semibold leading-snug text-foreground">
+          {post.caption}
+        </p>
+
+        {isDrop && post.dropTime && (
+          <div className="flex items-center justify-between rounded-lg bg-primary/10 px-2.5 py-1.5">
+            <div className="min-w-0">
+              <div className="text-[10px] font-bold uppercase tracking-widest text-primary">
+                Drops
+              </div>
+              <div className="truncate text-xs font-black text-foreground">
+                {post.dropTime}
+              </div>
+            </div>
+            {post.price && (
+              <div className="shrink-0 text-sm font-black text-primary">
+                ${post.price}
+              </div>
+            )}
+          </div>
+        )}
+
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3 text-[11px] font-semibold text-muted-foreground">
+            <span className="flex items-center gap-1">
+              <Heart className="h-3 w-3" /> {post.likes.toLocaleString()}
+            </span>
+            <span className="flex items-center gap-1">
+              <MessageCircle className="h-3 w-3" /> {post.comments}
+            </span>
+          </div>
+          {isDrop ? (
+            <button
+              onClick={() =>
+                toast.success("You'll be notified", {
+                  description: `We'll ping you before ${post.handle}'s drop.`,
+                })
+              }
+              className="flex items-center gap-1 rounded-full bg-foreground px-2.5 py-1 text-[11px] font-bold text-background hover:opacity-90"
+            >
+              <Bell className="h-3 w-3" /> Notify
+            </button>
+          ) : (
+            <Link
+              to="/live/$id"
+              params={{ id: post.creatorId }}
+              className="rounded-full bg-primary px-2.5 py-1 text-[11px] font-bold text-primary-foreground hover:opacity-90"
+            >
+              Watch
+            </Link>
+          )}
+        </div>
+      </div>
+    </article>
+  );
+}
+
