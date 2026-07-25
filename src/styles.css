@@ -68,6 +68,23 @@
   --chart-5: oklch(0.78 0.16 90);
 }
 
+.theme-dark {
+  --background: oklch(0.21 0.04 260);
+  --foreground: oklch(0.98 0.005 250);
+  --surface: oklch(0.27 0.03 260);
+  --surface-elevated: oklch(0.32 0.03 260);
+  --card: oklch(0.27 0.03 260);
+  --card-foreground: oklch(0.98 0.005 250);
+  --popover: oklch(0.27 0.03 260);
+  --popover-foreground: oklch(0.98 0.005 250);
+  --secondary: oklch(0.32 0.03 260);
+  --secondary-foreground: oklch(0.98 0.005 250);
+  --muted: oklch(0.32 0.03 260);
+  --muted-foreground: oklch(0.72 0.02 250);
+  --border: oklch(0.38 0.03 260);
+  --input: oklch(0.38 0.03 260);
+}
+
 @layer base {
   * {
     border-color: var(--color-border);
