@@ -14,6 +14,7 @@ import {
   VideoOff,
 } from "lucide-react";
 import { AppHeader } from "@/components/livebite/AppHeader";
+import { StreamChat } from "@/components/livebite/StreamChat";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import { useMenuItems, setMenuItemAvailability } from "@/hooks/use-menu-items";
@@ -312,8 +313,9 @@ function StudioDashboard() {
             </section>
           </div>
 
-          {/* RIGHT: Incoming orders */}
-          <aside className="rounded-2xl border border-border bg-surface p-5">
+          {/* RIGHT: Incoming orders + live chat */}
+          <aside className="flex flex-col gap-4">
+          <div className="rounded-2xl border border-border bg-surface p-5">
             <div className="mb-3 flex items-center justify-between">
               <h2 className="text-sm font-black uppercase tracking-widest text-muted-foreground">
                 Incoming orders
@@ -371,6 +373,15 @@ function StudioDashboard() {
                 </li>
               ))}
             </ul>
+          </div>
+
+          <StreamChat
+            streamId={currentStreamId ?? undefined}
+            currentUserId={(profile as any)?.id}
+            currentHandle={(profile as any)?.creators?.[0]?.handle ?? (profile as any)?.creators?.handle ?? "chef"}
+            isCreator
+            className="h-72"
+          />
           </aside>
         </div>
       </main>

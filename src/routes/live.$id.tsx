@@ -4,10 +4,12 @@ import { toast } from "sonner";
 import { ArrowLeft, Instagram, Music2, Plus, Share2, Star } from "lucide-react";
 import { AppHeader } from "@/components/livebite/AppHeader";
 import { CartBanner } from "@/components/livebite/CartBanner";
-import { ChatTicker } from "@/components/livebite/ChatTicker";
+import { StreamChat } from "@/components/livebite/StreamChat";
 import { LiveVideoPlayer } from "@/components/LiveVideoPlayer";
 import { cartStore } from "@/lib/cart-store";
 import { useMenuItems } from "@/hooks/use-menu-items";
+import { useAuth } from "@/hooks/use-auth";
+import { useMyLatestOrder } from "@/hooks/use-my-latest-order";
 import { getCreatorPageData } from "@/lib/api/creators";
 
 export const Route = createFileRoute("/live/$id")({
@@ -34,8 +36,10 @@ export const Route = createFileRoute("/live/$id")({
 function LiveView() {
   const { creator, activeStream } = Route.useLoaderData();
   const menu = useMenuItems(creator.id); // realtime — starts from loader data implicitly on first render
+  const { profile } = useAuth();
+  const myOrder = useMyLatestOrder(profile?.id, creator.id);
   const [tab, setTab] = useState<"menu" | "bio">("menu");
-  const profile = (creator as any).profiles;
+  const profileInfo = (creator as any).profiles;
 
   return (
     <div className="min-h-screen bg-background pb-28">
@@ -61,7 +65,25 @@ function LiveView() {
             <div className="mt-2 flex items-center justify-between">
               <span className="live-dot text-xs">On air</span>
             </div>
-            <ChatTicker />
+
+            {myOrder && myOrder.status !== "declined" && (
+              <div className="mt-2 flex items-center justify-between rounded-xl border border-primary/40 bg-primary/10 px-4 py-2.5 text-sm">
+                <span className="font-semibold text-foreground">
+                  Your order · ${myOrder.total_amount}
+                </span>
+                <span className="font-black uppercase tracking-widest text-primary">
+                  {myOrder.status.replace("_", " ")}
+                </span>
+              </div>
+            )}
+
+            <StreamChat
+              streamId={activeStream.id}
+              currentUserId={profile?.id}
+              currentHandle={(profile as any)?.full_name?.split(" ")[0] ?? "guest"}
+              isCreator={false}
+              className="mt-3 h-72"
+            />
           </div>
         ) : (
           <div className="grid aspect-video place-items-center rounded-2xl border border-dashed border-border bg-surface text-sm font-semibold text-muted-foreground">
@@ -72,7 +94,7 @@ function LiveView() {
         {/* Creator strip */}
         <div className="mt-4 flex items-center gap-3 rounded-2xl border border-border bg-surface p-3">
           <img
-            src={profile?.avatar_url ?? "https://i.pravatar.cc/120"}
+            src={profileInfo?.avatar_url ?? "https://i.pravatar.cc/120"}
             alt=""
             className="h-12 w-12 rounded-full border-2 border-primary object-cover"
           />
@@ -178,7 +200,7 @@ function LiveView() {
             </div>
           ) : (
             <div className="rounded-2xl border border-border bg-surface p-5">
-              <h3 className="text-lg font-black">{profile?.full_name ?? creator.handle}</h3>
+              <h3 className="text-lg font-black">{profileInfo?.full_name ?? creator.handle}</h3>
               <p className="mt-1 text-sm text-muted-foreground">{creator.bio}</p>
               <div className="mt-5 flex flex-wrap gap-2">
                 <a href="#" className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface-elevated px-3 py-1.5 text-xs font-semibold hover:border-primary">
