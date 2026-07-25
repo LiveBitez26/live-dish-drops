@@ -12,6 +12,8 @@ import { Toaster } from "sonner";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { BottomNav } from "../components/livebite/BottomNav";
+
 
 function NotFoundComponent() {
   return (
@@ -121,7 +123,9 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
+      <BottomNav />
       <Toaster theme="dark" position="top-center" richColors closeButton />
     </QueryClientProvider>
+
   );
 }

@@ -120,26 +120,66 @@ function OrderTracker() {
           <div className="relative aspect-video overflow-hidden rounded-2xl border border-border bg-surface">
             <img
               src="https://images.unsplash.com/photo-1524661135-423995f22d0b?w=1200&q=80"
-              alt="Map"
+              alt="Delivery route map"
               className="absolute inset-0 h-full w-full object-cover opacity-70"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-background/40" />
-            <div className="absolute left-4 top-4 rounded-full bg-black/60 px-3 py-1 text-xs font-bold text-white backdrop-blur">
-              Driver: Jordan · Toyota Prius · ETA 14 min
+            <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/10 to-background/40" />
+
+            {/* Route line */}
+            <svg className="absolute inset-0 h-full w-full" viewBox="0 0 400 225" preserveAspectRatio="none">
+              <path
+                d="M40,180 C120,120 200,200 260,120 S360,60 380,50"
+                fill="none"
+                stroke="var(--color-primary)"
+                strokeWidth="3"
+                strokeDasharray="6 6"
+                className="animate-pulse"
+              />
+            </svg>
+
+            {/* ETA badge */}
+            <div className="absolute left-3 top-3 rounded-2xl border border-primary/40 bg-black/70 px-3 py-2 backdrop-blur">
+              <div className="text-[10px] font-bold uppercase tracking-widest text-primary">Arriving in</div>
+              <div className="text-lg font-black text-white">18 min</div>
             </div>
-            <div className="absolute left-1/2 top-1/2 grid h-14 w-14 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-primary text-primary-foreground glow-primary">
-              <MapPin className="h-6 w-6" />
+
+            {/* Driver chip */}
+            <div className="absolute right-3 top-3 rounded-full bg-black/70 px-3 py-1 text-xs font-bold text-white backdrop-blur">
+              Jordan · Toyota Prius
             </div>
-            <div className="absolute inset-x-4 bottom-4 rounded-xl border border-border bg-surface/90 p-3 backdrop-blur">
-              <div className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+
+            {/* Driver pin */}
+            <div className="absolute left-[62%] top-[46%] grid h-12 w-12 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-primary text-primary-foreground glow-primary">
+              <Truck className="h-5 w-5" />
+            </div>
+            {/* Destination pin */}
+            <div className="absolute right-[5%] top-[22%] grid h-9 w-9 place-items-center rounded-full border-2 border-primary bg-background text-primary">
+              <MapPin className="h-4 w-4" />
+            </div>
+
+            {/* PiP creator live stream */}
+            <div className="absolute bottom-3 left-3 w-32 overflow-hidden rounded-xl border-2 border-primary shadow-2xl sm:w-40">
+              <div className="relative aspect-[9/12]">
+                <img src={creator.cover} alt="Chef live" className="absolute inset-0 h-full w-full object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+                <span className="live-dot absolute left-1.5 top-1.5 scale-75">Live</span>
+                <div className="absolute inset-x-1.5 bottom-1.5 truncate text-[10px] font-bold text-white">
+                  {creator.handle}
+                </div>
+              </div>
+            </div>
+
+            <div className="absolute inset-x-4 bottom-4 ml-36 rounded-xl border border-border bg-surface/95 p-3 backdrop-blur sm:ml-44">
+              <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
                 Route
               </div>
-              <div className="text-sm font-semibold">
+              <div className="truncate text-xs font-semibold sm:text-sm">
                 {creator.handle}'s kitchen → 24 Market St · 1.4 mi
               </div>
             </div>
           </div>
         )}
+
 
         {/* Timeline */}
         <section className="mt-6 rounded-2xl border border-border bg-surface p-5">
