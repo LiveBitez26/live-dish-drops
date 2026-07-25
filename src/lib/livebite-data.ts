@@ -201,6 +201,122 @@ export const CHAT_ACTIVITY = [
   "Batch #2 is on the flat-top 🔥",
 ];
 
+export type DailyPost = {
+  id: string;
+  creatorId: string;
+  handle: string;
+  avatar: string;
+  image: string;
+  caption: string;
+  kind: "photo" | "clip" | "drop";
+  likes: number;
+  comments: number;
+  duration?: string;
+  dropTime?: string;
+  price?: number;
+};
+
+export const DAILY_FEED: DailyPost[] = [
+  {
+    id: "d1",
+    creatorId: "chefmarco",
+    handle: "@ChefMarco",
+    avatar: "https://i.pravatar.cc/120?img=13",
+    image: "https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=800&q=80",
+    caption: "Tomorrow's birria batch is marinating overnight 🌶️",
+    kind: "drop",
+    likes: 1284,
+    comments: 92,
+    dropTime: "Tomorrow · 6:00 PM",
+    price: 14,
+  },
+  {
+    id: "d2",
+    creatorId: "smashburgerking",
+    handle: "@SmashBurgerKing",
+    avatar: "https://i.pravatar.cc/120?img=68",
+    image: "https://images.unsplash.com/photo-1550547660-d9450f859349?w=800&q=80",
+    caption: "That crust though 🔥",
+    kind: "clip",
+    likes: 4210,
+    comments: 318,
+    duration: "0:15",
+  },
+  {
+    id: "d3",
+    creatorId: "sourdoughsam",
+    handle: "@SourdoughSam",
+    avatar: "https://i.pravatar.cc/120?img=45",
+    image: "https://images.unsplash.com/photo-1499636136210-6f4ee915583e?w=800&q=80",
+    caption: "Miso cookie dough — resting 48hrs",
+    kind: "photo",
+    likes: 872,
+    comments: 41,
+  },
+  {
+    id: "d4",
+    creatorId: "pizzaluca",
+    handle: "@PizzaLuca",
+    avatar: "https://i.pravatar.cc/120?img=52",
+    image: "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=800&q=80",
+    caption: "New Diavola drop — Saturday night 🍕",
+    kind: "drop",
+    likes: 2103,
+    comments: 156,
+    dropTime: "Sat · 8:00 PM",
+    price: 21,
+  },
+  {
+    id: "d5",
+    creatorId: "ramenrei",
+    handle: "@RamenRei",
+    avatar: "https://i.pravatar.cc/120?img=8",
+    image: "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=800&q=80",
+    caption: "18hr tonkotsu, hitting the pot now",
+    kind: "clip",
+    likes: 3421,
+    comments: 210,
+    duration: "0:12",
+  },
+  {
+    id: "d6",
+    creatorId: "veganvibes",
+    handle: "@VeganVibes",
+    avatar: "https://i.pravatar.cc/120?img=32",
+    image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&q=80",
+    caption: "New Buffalo Cauli sauce test 🌱",
+    kind: "photo",
+    likes: 1567,
+    comments: 88,
+  },
+  {
+    id: "d7",
+    creatorId: "chefmarco",
+    handle: "@ChefMarco",
+    avatar: "https://i.pravatar.cc/120?img=13",
+    image: "https://images.unsplash.com/photo-1552332386-f8dd00dc2f85?w=800&q=80",
+    caption: "Consommé test round 3 — best one yet",
+    kind: "clip",
+    likes: 921,
+    comments: 47,
+    duration: "0:15",
+  },
+  {
+    id: "d8",
+    creatorId: "sourdoughsam",
+    handle: "@SourdoughSam",
+    avatar: "https://i.pravatar.cc/120?img=45",
+    image: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800&q=80",
+    caption: "Sunday sourdough pop-up — pre-orders open",
+    kind: "drop",
+    likes: 1102,
+    comments: 63,
+    dropTime: "Sun · 10:00 AM",
+    price: 12,
+  },
+];
+
 export function getCreator(id: string) {
   return CREATORS.find((c) => c.id === id) ?? CREATORS[0];
 }
+
