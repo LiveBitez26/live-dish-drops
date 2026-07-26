@@ -40,6 +40,11 @@ export function useMenuItems(creatorId: string | undefined) {
         { event: "INSERT", schema: "public", table: "menu_items", filter: `creator_id=eq.${creatorId}` },
         (payload) => setItems((prev) => [...prev, payload.new as MenuItem]),
       )
+      .on(
+        "postgres_changes",
+        { event: "DELETE", schema: "public", table: "menu_items", filter: `creator_id=eq.${creatorId}` },
+        (payload) => setItems((prev) => prev.filter((m) => m.id !== (payload.old as MenuItem).id)),
+      )
       .subscribe();
 
     return () => {

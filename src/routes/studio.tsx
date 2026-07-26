@@ -24,6 +24,7 @@ import { useAgoraBroadcast } from "@/hooks/use-agora-broadcast";
 import { updateOrderStatus } from "@/lib/api/orders";
 import { updateCreatorProfile } from "@/lib/api/creator-profile";
 import { createPost, getMyPosts, deletePost } from "@/lib/api/posts";
+import { createMenuItem, updateMenuItem, deleteMenuItem } from "@/lib/api/menu-items";
 import { uploadImage } from "@/lib/storage";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useRef } from "react";
@@ -304,47 +305,15 @@ function StudioDashboard() {
                   Today's drop menu
                 </h2>
                 <span className="text-xs font-semibold text-muted-foreground">
-                  Tap toggle to mark sold out
+                  Toggle to mark sold out
                 </span>
               </div>
               <ul className="space-y-2">
-                {inventory.map((m) => {
-                  const soldOut = !m.is_available || m.remaining_inventory <= 0;
-                  return (
-                    <li
-                      key={m.id}
-                      className={cn(
-                        "flex items-center gap-3 rounded-xl border border-border bg-surface-elevated p-3 transition",
-                        soldOut && "opacity-60"
-                      )}
-                    >
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className={cn("truncate text-sm font-bold", soldOut && "line-through")}>
-                            {m.name}
-                          </span>
-                          <span className="shrink-0 text-xs font-bold text-primary">${m.price}</span>
-                        </div>
-                        <div className="mt-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                          {soldOut ? "Sold out" : `${m.remaining_inventory} of ${m.total_inventory} left`}
-                        </div>
-                      </div>
-                      <ToggleSwitch
-                        checked={!m.is_available}
-                        onChange={async (v) => {
-                          try {
-                            await setMenuItemAvailability(m.id, !v);
-                            toast(v ? `${m.name} marked sold out` : `${m.name} available again`);
-                          } catch (err) {
-                            toast.error("Update failed", { description: (err as Error).message });
-                          }
-                        }}
-                        label={`Mark ${m.name} sold out`}
-                      />
-                    </li>
-                  );
-                })}
+                {inventory.map((m) => (
+                  <MenuItemRow key={m.id} item={m} />
+                ))}
               </ul>
+              {creatorId && <AddMenuItemForm creatorId={creatorId} />}
             </section>
           </div>
 
@@ -489,13 +458,13 @@ function ToggleSwitch({
       onClick={() => onChange(!checked)}
       className={cn(
         "relative h-6 w-11 shrink-0 rounded-full border transition",
-        checked ? "border-destructive bg-destructive" : "border-border bg-surface"
+        checked ? "border-destructive bg-destructive" : "border-green-600/40 bg-green-500/20"
       )}
     >
       <span
         className={cn(
-          "absolute top-0.5 grid h-4 w-4 place-items-center rounded-full bg-white transition-transform",
-          checked ? "translate-x-6" : "translate-x-0.5"
+          "absolute top-0.5 grid h-4 w-4 place-items-center rounded-full shadow-sm transition-transform",
+          checked ? "translate-x-6 bg-white" : "translate-x-0.5 bg-green-600",
         )}
       />
     </button>
@@ -884,5 +853,273 @@ function CreatePostPanel({ creatorId }: { creatorId: string }) {
         </div>
       )}
     </div>
+  );
+}
+
+function MenuItemRow({ item }: { item: any }) {
+  const [editing, setEditing] = useState(false);
+  const [name, setName] = useState(item.name);
+  const [description, setDescription] = useState(item.description ?? "");
+  const [price, setPrice] = useState(String(item.price));
+  const [totalInventory, setTotalInventory] = useState(String(item.total_inventory));
+  const [remainingInventory, setRemainingInventory] = useState(String(item.remaining_inventory));
+  const [saving, setSaving] = useState(false);
+
+  const soldOut = !item.is_available || item.remaining_inventory <= 0;
+
+  async function handleSave(e: React.FormEvent) {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      await updateMenuItem({
+        data: {
+          menuItemId: item.id,
+          name,
+          description: description || null,
+          price: Number(price),
+          totalInventory: Number(totalInventory),
+          remainingInventory: Number(remainingInventory),
+        },
+      });
+      toast.success("Menu item updated");
+      setEditing(false);
+    } catch (err) {
+      toast.error("Couldn't save", { description: (err as Error).message });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleDelete() {
+    if (!window.confirm(`Remove "${item.name}" from your menu?`)) return;
+    try {
+      await deleteMenuItem({ data: { menuItemId: item.id } });
+      toast("Menu item removed");
+    } catch (err) {
+      toast.error("Couldn't remove item", { description: (err as Error).message });
+    }
+  }
+
+  if (editing) {
+    return (
+      <li className="rounded-xl border border-primary/40 bg-surface-elevated p-3">
+        <form onSubmit={handleSave} className="space-y-2">
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="w-full rounded-lg border border-border bg-surface px-2.5 py-1.5 text-sm font-bold"
+            placeholder="Item name"
+          />
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            rows={2}
+            className="w-full rounded-lg border border-border bg-surface px-2.5 py-1.5 text-sm"
+            placeholder="Description"
+          />
+          <div className="grid grid-cols-3 gap-2">
+            <div>
+              <label className="mb-0.5 block text-[10px] font-bold uppercase text-muted-foreground">Price</label>
+              <input
+                type="number"
+                min={0}
+                step={0.5}
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+                className="w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-sm"
+              />
+            </div>
+            <div>
+              <label className="mb-0.5 block text-[10px] font-bold uppercase text-muted-foreground">Total made</label>
+              <input
+                type="number"
+                min={0}
+                value={totalInventory}
+                onChange={(e) => setTotalInventory(e.target.value)}
+                className="w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-sm"
+              />
+            </div>
+            <div>
+              <label className="mb-0.5 block text-[10px] font-bold uppercase text-muted-foreground">Left now</label>
+              <input
+                type="number"
+                min={0}
+                value={remainingInventory}
+                onChange={(e) => setRemainingInventory(e.target.value)}
+                className="w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-sm"
+              />
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <button
+              type="submit"
+              disabled={saving}
+              className="rounded-full bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground disabled:opacity-50"
+            >
+              {saving ? "Saving…" : "Save"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setEditing(false)}
+              className="rounded-full border border-border px-3 py-1.5 text-xs font-bold text-muted-foreground"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleDelete}
+              className="ml-auto flex items-center gap-1 rounded-full border border-destructive/40 px-3 py-1.5 text-xs font-bold text-destructive"
+            >
+              <Trash2 className="h-3 w-3" /> Remove
+            </button>
+          </div>
+        </form>
+      </li>
+    );
+  }
+
+  return (
+    <li
+      className={cn(
+        "flex items-center gap-3 rounded-xl border border-border bg-surface-elevated p-3 transition",
+        soldOut && "opacity-60"
+      )}
+    >
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-2">
+          <span className={cn("truncate text-sm font-bold", soldOut && "line-through")}>{item.name}</span>
+          <span className="shrink-0 text-xs font-bold text-primary">${item.price}</span>
+        </div>
+        <div className="mt-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+          {soldOut ? "Sold out" : `${item.remaining_inventory} of ${item.total_inventory} left`}
+        </div>
+      </div>
+      <button
+        onClick={() => setEditing(true)}
+        className="shrink-0 rounded-full border border-border px-2.5 py-1 text-xs font-bold text-muted-foreground hover:border-primary/60 hover:text-primary"
+      >
+        Edit
+      </button>
+      <ToggleSwitch
+        checked={!item.is_available}
+        onChange={async (v) => {
+          try {
+            await setMenuItemAvailability(item.id, !v);
+            toast(v ? `${item.name} marked sold out` : `${item.name} available again`);
+          } catch (err) {
+            toast.error("Update failed", { description: (err as Error).message });
+          }
+        }}
+        label={`Mark ${item.name} sold out`}
+      />
+    </li>
+  );
+}
+
+function AddMenuItemForm({ creatorId }: { creatorId: string }) {
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [price, setPrice] = useState("");
+  const [totalInventory, setTotalInventory] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  async function handleAdd(e: React.FormEvent) {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      await createMenuItem({
+        data: {
+          creatorId,
+          name,
+          description: description || undefined,
+          price: Number(price),
+          totalInventory: Number(totalInventory),
+        },
+      });
+      toast.success(`${name} added to your menu`);
+      setName("");
+      setDescription("");
+      setPrice("");
+      setTotalInventory("");
+      setOpen(false);
+    } catch (err) {
+      toast.error("Couldn't add item", { description: (err as Error).message });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (!open) {
+    return (
+      <button
+        onClick={() => setOpen(true)}
+        className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-primary/40 py-2.5 text-sm font-bold text-primary hover:border-primary"
+      >
+        <DollarSign className="h-4 w-4" /> Add a new menu item
+      </button>
+    );
+  }
+
+  return (
+    <form onSubmit={handleAdd} className="mt-3 space-y-2 rounded-xl border border-primary/40 bg-surface-elevated p-3">
+      <input
+        required
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        placeholder="Item name (e.g. Birria Tacos)"
+        className="w-full rounded-lg border border-border bg-surface px-2.5 py-1.5 text-sm font-bold"
+      />
+      <textarea
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+        rows={2}
+        placeholder="Description"
+        className="w-full rounded-lg border border-border bg-surface px-2.5 py-1.5 text-sm"
+      />
+      <div className="grid grid-cols-2 gap-2">
+        <div>
+          <label className="mb-0.5 block text-[10px] font-bold uppercase text-muted-foreground">Price ($)</label>
+          <input
+            required
+            type="number"
+            min={0}
+            step={0.5}
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
+            className="w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-sm"
+          />
+        </div>
+        <div>
+          <label className="mb-0.5 block text-[10px] font-bold uppercase text-muted-foreground">
+            How many are you making?
+          </label>
+          <input
+            required
+            type="number"
+            min={1}
+            value={totalInventory}
+            onChange={(e) => setTotalInventory(e.target.value)}
+            className="w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-sm"
+          />
+        </div>
+      </div>
+      <div className="flex gap-2">
+        <button
+          type="submit"
+          disabled={saving}
+          className="rounded-full bg-primary px-4 py-1.5 text-sm font-bold text-primary-foreground disabled:opacity-50"
+        >
+          {saving ? "Adding…" : "Add to menu"}
+        </button>
+        <button
+          type="button"
+          onClick={() => setOpen(false)}
+          className="rounded-full border border-border px-4 py-1.5 text-sm font-bold text-muted-foreground"
+        >
+          Cancel
+        </button>
+      </div>
+    </form>
   );
 }
