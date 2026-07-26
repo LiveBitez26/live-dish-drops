@@ -125,6 +125,31 @@ export const getMyFollowedCreators = createServerFn({ method: "GET" }).handler(a
   return (data ?? []).map((row: any) => row.creators).filter(Boolean);
 });
 
+// --- Basic profile (name, phone) -----------------------------------------------------
+
+const updateProfileSchema = z.object({
+  fullName: z.string().min(1).max(100).optional(),
+  phoneNumber: z.string().min(7).max(20).optional(),
+});
+
+export const updateMyProfile = createServerFn({ method: "POST" })
+  .inputValidator(updateProfileSchema)
+  .handler(async ({ data }) => {
+    const supabase = getSupabaseServerClient();
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData.user) throw new Error("UNAUTHENTICATED");
+
+    const updates: Record<string, string> = {};
+    if (data.fullName !== undefined) updates.full_name = data.fullName;
+    if (data.phoneNumber !== undefined) updates.phone_number = data.phoneNumber;
+
+    if (Object.keys(updates).length > 0) {
+      const { error } = await supabase.from("profiles").update(updates).eq("id", userData.user.id);
+      if (error) throw new Error(error.message);
+    }
+    return { ok: true };
+  });
+
 // --- Notification preferences -----------------------------------------------------
 
 const notifySchema = z.object({

@@ -26,6 +26,7 @@ export interface Database {
           avatar_url: string | null;
           notify_new_drops: boolean;
           notify_order_updates: boolean;
+          phone_number: string | null;
           created_at: string;
         };
         Insert: Partial<Database["public"]["Tables"]["profiles"]["Row"]> & { id: string; email: string };

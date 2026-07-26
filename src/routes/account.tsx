@@ -12,6 +12,7 @@ import {
   getMyOrderHistory,
   getMyFollowedCreators,
   updateNotificationPrefs,
+  updateMyProfile,
 } from "@/lib/api/customer-profile";
 import { cn } from "@/lib/utils";
 
@@ -58,10 +59,7 @@ function AccountPage() {
     <div className="min-h-screen bg-background pb-24">
       <AppHeader />
       <main className="mx-auto max-w-2xl px-4 py-6">
-        <h1 className="mb-1 text-2xl font-black tracking-tight">
-          {(profile as any).full_name ?? "My Account"}
-        </h1>
-        <p className="mb-6 text-sm text-muted-foreground">{(profile as any).email}</p>
+        <ProfileHeader profile={profile} />
 
         <div className="mb-6 flex gap-1 overflow-x-auto rounded-xl border border-border bg-surface p-1">
           <TabBtn active={tab === "addresses"} onClick={() => setTab("addresses")} icon={<MapPin className="h-4 w-4" />}>
@@ -84,6 +82,103 @@ function AccountPage() {
         {tab === "settings" && <NotificationsTab profile={profile} />}
       </main>
     </div>
+  );
+}
+
+function ProfileHeader({ profile }: { profile: any }) {
+  const [editing, setEditing] = useState(false);
+  const [fullName, setFullName] = useState(profile.full_name ?? "");
+  const [phone, setPhone] = useState(profile.phone_number ?? "");
+  const [saving, setSaving] = useState(false);
+
+  async function handleSave(e: React.FormEvent) {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      await updateMyProfile({ data: { fullName, phoneNumber: phone || undefined } });
+      toast.success("Profile updated");
+      setEditing(false);
+    } catch (err) {
+      toast.error("Couldn't save", { description: (err as Error).message });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (!editing) {
+    return (
+      <div className="mb-6">
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-2xl font-black tracking-tight">{profile.full_name ?? "My Account"}</h1>
+            <p className="text-sm text-muted-foreground">{profile.email}</p>
+            <p className="text-sm text-muted-foreground">
+              {profile.phone_number ? profile.phone_number : "No phone number on file"}
+            </p>
+          </div>
+          <button
+            onClick={() => setEditing(true)}
+            className="rounded-full border border-border px-3 py-1.5 text-xs font-bold text-foreground hover:border-primary/60"
+          >
+            Edit
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSave} className="mb-6 space-y-3 rounded-2xl border border-border bg-surface p-4">
+      <div>
+        <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-muted-foreground">
+          Full name
+        </label>
+        <input
+          value={fullName}
+          onChange={(e) => setFullName(e.target.value)}
+          className="w-full rounded-lg border border-border bg-surface-elevated px-3 py-2 text-sm"
+        />
+      </div>
+      <div>
+        <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-muted-foreground">
+          Phone number <span className="normal-case text-muted-foreground">(so drivers can reach you)</span>
+        </label>
+        <input
+          type="tel"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          placeholder="e.g. +1 555 123 4567"
+          className="w-full rounded-lg border border-border bg-surface-elevated px-3 py-2 text-sm"
+        />
+      </div>
+      <div>
+        <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-muted-foreground">Email</label>
+        <input
+          disabled
+          value={profile.email}
+          className="w-full rounded-lg border border-border bg-surface-elevated px-3 py-2 text-sm text-muted-foreground"
+        />
+        <p className="mt-1 text-xs text-muted-foreground">
+          Email changes require verification and aren't supported here yet — contact support if you need this changed.
+        </p>
+      </div>
+      <div className="flex gap-2">
+        <button
+          type="submit"
+          disabled={saving}
+          className="rounded-full bg-primary px-4 py-1.5 text-sm font-bold text-primary-foreground disabled:opacity-50"
+        >
+          {saving ? "Saving…" : "Save"}
+        </button>
+        <button
+          type="button"
+          onClick={() => setEditing(false)}
+          className="rounded-full border border-border px-4 py-1.5 text-sm font-bold text-muted-foreground"
+        >
+          Cancel
+        </button>
+      </div>
+    </form>
   );
 }
 
