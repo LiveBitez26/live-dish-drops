@@ -129,13 +129,11 @@ function LiveDropsView({
 
             <div className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2">
               {hero.map((c) => (
-                <Link
+                <div
                   key={c.id}
-                  to="/live/$id"
-                  params={{ id: c.id }}
                   className="group relative w-[82%] shrink-0 snap-start overflow-hidden rounded-2xl border border-border bg-surface sm:w-[46%] lg:w-[32%]"
                 >
-                  <div className="relative aspect-video overflow-hidden">
+                  <Link to="/live/$id" params={{ id: c.id }} className="relative block aspect-video overflow-hidden">
                     <img
                       src={c.cover}
                       alt={c.dish}
@@ -145,26 +143,26 @@ function LiveDropsView({
                     <div className="absolute left-3 top-3 flex items-center gap-2">
                       <span className="live-dot">Live</span>
                     </div>
-                    <div className="absolute inset-x-3 bottom-3 flex items-center gap-3">
-                      <img
-                        src={c.avatar}
-                        alt=""
-                        className="h-10 w-10 rounded-full border-2 border-primary object-cover"
-                      />
-                      <div className="min-w-0 flex-1">
-                        <div className="truncate text-sm font-bold text-white">
-                          @{c.handle}
-                        </div>
-                        <div className="truncate text-xs text-white/80">
-                          {c.dish}
-                        </div>
-                      </div>
-                      <div className="rounded-xl bg-primary px-3 py-2 text-xs font-bold text-primary-foreground">
-                        <Play className="inline h-3 w-3 -mt-0.5" /> Watch
-                      </div>
+                    <div className="absolute right-3 top-3 rounded-xl bg-primary px-3 py-2 text-xs font-bold text-primary-foreground">
+                      <Play className="inline h-3 w-3 -mt-0.5" /> Watch
                     </div>
-                  </div>
-                </Link>
+                  </Link>
+                  <Link
+                    to="/creator/$id"
+                    params={{ id: c.id }}
+                    className="flex items-center gap-3 p-3 hover:bg-surface-elevated"
+                  >
+                    <img
+                      src={c.avatar}
+                      alt=""
+                      className="h-10 w-10 shrink-0 rounded-full border-2 border-primary object-cover"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-sm font-bold hover:underline">@{c.handle}</div>
+                      <div className="truncate text-xs text-muted-foreground">{c.dish}</div>
+                    </div>
+                  </Link>
+                </div>
               ))}
             </div>
           </section>
@@ -215,49 +213,51 @@ function LiveDropsView({
                       </div>
                     </Link>
 
-                    <div className="p-4">
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={c.avatar}
-                          alt=""
-                          className="h-10 w-10 rounded-full border border-border object-cover"
-                        />
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-1.5">
-                            <span className="truncate text-sm font-bold">@{c.handle}</span>
-                            <span className="text-xs text-muted-foreground">
-                              · {c.subs} subs
-                            </span>
-                          </div>
-                          <div className="truncate text-xs text-muted-foreground">
-                            {c.dish}
-                            {c.price !== null && ` · $${c.price}`}
-                          </div>
+                    <Link
+                      to="/creator/$id"
+                      params={{ id: c.id }}
+                      className="flex items-center gap-3 p-4 hover:bg-surface-elevated"
+                    >
+                      <img
+                        src={c.avatar}
+                        alt=""
+                        className="h-10 w-10 shrink-0 rounded-full border border-border object-cover"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5">
+                          <span className="truncate text-sm font-bold hover:underline">@{c.handle}</span>
+                          <span className="text-xs text-muted-foreground">
+                            · {c.subs} subs
+                          </span>
                         </div>
-                        <div className="rounded-full bg-surface-elevated px-2 py-0.5 text-xs font-bold text-primary">
-                          ★ {c.rating}
+                        <div className="truncate text-xs text-muted-foreground">
+                          {c.dish}
+                          {c.price !== null && ` · $${c.price}`}
                         </div>
                       </div>
+                      <div className="rounded-full bg-surface-elevated px-2 py-0.5 text-xs font-bold text-primary">
+                        ★ {c.rating}
+                      </div>
+                    </Link>
 
-                      {c.ordersTotal > 0 && (
-                        <div className="mt-3">
-                          <div className="mb-1 flex items-center justify-between text-xs">
-                            <span className="font-semibold text-muted-foreground">
-                              {c.ordersLeft} / {c.ordersTotal} orders left
-                            </span>
-                            <span className="font-bold text-primary">
-                              {c.ordersLeft < 10 ? "Almost gone" : "Available"}
-                            </span>
-                          </div>
-                          <div className="h-1.5 overflow-hidden rounded-full bg-surface-elevated">
-                            <div
-                              className="h-full bg-gradient-to-r from-primary to-destructive transition-all"
-                              style={{ width: `${pct}%` }}
-                            />
-                          </div>
+                    {c.ordersTotal > 0 && (
+                      <div className="px-4 pb-4">
+                        <div className="mb-1 flex items-center justify-between text-xs">
+                          <span className="font-semibold text-muted-foreground">
+                            {c.ordersLeft} / {c.ordersTotal} orders left
+                          </span>
+                          <span className="font-bold text-primary">
+                            {c.ordersLeft < 10 ? "Almost gone" : "Available"}
+                          </span>
                         </div>
-                      )}
-                    </div>
+                        <div className="h-1.5 overflow-hidden rounded-full bg-surface-elevated">
+                          <div
+                            className="h-full bg-gradient-to-r from-primary to-destructive transition-all"
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                      </div>
+                    )}
                   </article>
                 );
               })}
