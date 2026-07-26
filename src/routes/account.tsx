@@ -23,7 +23,13 @@ type TabKey = "addresses" | "orders" | "following" | "settings";
 
 function AccountPage() {
   const { profile, loading } = useAuth();
-  const [tab, setTab] = useState<TabKey>("addresses");
+  const [tab, setTab] = useState<TabKey>(() => {
+    if (typeof window === "undefined") return "addresses";
+    const t = new URLSearchParams(window.location.search).get("tab");
+    return (["addresses", "orders", "following", "settings"] as const).includes(t as TabKey)
+      ? (t as TabKey)
+      : "addresses";
+  });
 
   if (loading) {
     return (
