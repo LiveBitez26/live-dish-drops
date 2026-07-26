@@ -61,8 +61,9 @@ function CreatorProfile() {
   const [openPost, setOpenPost] = useState<any>(null);
 
   const profileInfo = (creator as any).profiles;
-  const myCreatorId = (profile as any)?.creators?.[0]?.id ?? (profile as any)?.creators?.handle ? (profile as any)?.creators?.[0]?.id : undefined;
-  const isOwner = Boolean((profile as any)?.creators?.[0]?.id === creator.id || (profile as any)?.creators?.id === creator.id);
+  const myCreators = (profile as any)?.creators;
+  const myCreatorId = Array.isArray(myCreators) ? myCreators[0]?.id : myCreators?.id;
+  const isOwner = Boolean(myCreatorId && myCreatorId === creator.id);
   const posts = allPosts.filter((p: any) => p.creator_id === creator.id);
 
   async function handleFollow() {

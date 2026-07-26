@@ -10,7 +10,7 @@ import type { DailyPost } from "@/lib/livebite-data";
 import { cn } from "@/lib/utils";
 import { getDiscoverCreators } from "@/lib/api/discover";
 
-type DiscoverCreator = Awaited<ReturnType<typeof getDiscoverCreators>>[number];
+type DiscoverCreator = Awaited<ReturnType<typeof getDiscoverCreators>>["creators"][number];
 
 export const Route = createFileRoute("/")({
   loader: () => getDiscoverCreators(),
@@ -36,7 +36,7 @@ export const Route = createFileRoute("/")({
 });
 
 function Discover() {
-  const creators = Route.useLoaderData();
+  const { creators, error } = Route.useLoaderData();
   const [tab, setTab] = useState<"live" | "feed">("live");
   const live = creators.filter((c) => c.isLive);
   const hero = live.slice(0, 4);
@@ -46,6 +46,12 @@ function Discover() {
       <AppHeader />
 
       <main className="mx-auto max-w-6xl px-4 py-6">
+        {error && (
+          <div className="mb-4 rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm font-semibold text-destructive">
+            Couldn't load creators: {error}
+          </div>
+        )}
+
         {/* Segmented tab switcher */}
         <div className="mb-6 flex rounded-full border border-border bg-surface p-1 shadow-sm">
           <TabButton active={tab === "live"} onClick={() => setTab("live")}>

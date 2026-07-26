@@ -16,9 +16,13 @@ export const getDiscoverCreators = createServerFn({ method: "GET" }).handler(asy
     .order("is_live", { ascending: false })
     .order("follower_count", { ascending: false });
 
-  if (error || !creators) return [];
+  if (error) {
+    console.error("[getDiscoverCreators] query failed:", error.message);
+    return { creators: [], error: error.message };
+  }
+  if (!creators) return { creators: [], error: null };
 
-  return creators.map((c: any) => {
+  const mapped = creators.map((c: any) => {
     const menu = c.menu_items ?? [];
     const totalInventory = menu.reduce((s: number, m: any) => s + (m.total_inventory ?? 0), 0);
     const remainingInventory = menu.reduce((s: number, m: any) => s + (m.remaining_inventory ?? 0), 0);
@@ -38,4 +42,6 @@ export const getDiscoverCreators = createServerFn({ method: "GET" }).handler(asy
       ordersLeft: remainingInventory,
     };
   });
+
+  return { creators: mapped, error: null };
 });

@@ -23,13 +23,14 @@ export const getCreatorPageData = createServerFn({ method: "GET" })
       .single();
     if (error || !creator) throw notFound();
 
-    const { data: menu } = await supabase
+    const { data: menu, error: menuError } = await supabase
       .from("menu_items")
       .select("*")
       .eq("creator_id", data.creatorId)
       .order("created_at");
+    if (menuError) console.error("[getCreatorPageData] menu query failed:", menuError.message);
 
-    const { data: activeStream } = await supabase
+    const { data: activeStream, error: streamError } = await supabase
       .from("live_streams")
       .select("*")
       .eq("creator_id", data.creatorId)
@@ -37,30 +38,34 @@ export const getCreatorPageData = createServerFn({ method: "GET" })
       .order("started_at", { ascending: false })
       .limit(1)
       .maybeSingle();
+    if (streamError) console.error("[getCreatorPageData] activeStream query failed:", streamError.message);
 
-    const { data: reviews } = await supabase
+    const { data: reviews, error: reviewsError } = await supabase
       .from("reviews")
       .select("*, profiles(full_name)")
       .eq("creator_id", data.creatorId)
       .order("created_at", { ascending: false })
       .limit(50);
+    if (reviewsError) console.error("[getCreatorPageData] reviews query failed:", reviewsError.message);
 
-    const { data: upcomingDrops } = await supabase
+    const { data: upcomingDrops, error: dropsError } = await supabase
       .from("scheduled_drops")
       .select("*")
       .eq("creator_id", data.creatorId)
       .gte("scheduled_at", new Date().toISOString())
       .order("scheduled_at", { ascending: true });
+    if (dropsError) console.error("[getCreatorPageData] upcomingDrops query failed:", dropsError.message);
 
     const { data: userData } = await supabase.auth.getUser();
     let isFollowing = false;
     if (userData.user) {
-      const { data: followRow } = await supabase
+      const { data: followRow, error: followError } = await supabase
         .from("follows")
         .select("creator_id")
         .eq("follower_id", userData.user.id)
         .eq("creator_id", data.creatorId)
         .maybeSingle();
+      if (followError) console.error("[getCreatorPageData] follow check failed:", followError.message);
       isFollowing = Boolean(followRow);
     }
 
