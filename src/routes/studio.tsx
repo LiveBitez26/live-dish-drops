@@ -163,7 +163,7 @@ function StudioDashboard() {
 
   if (authLoading) {
     return (
-      <div className="theme-dark grid min-h-screen place-items-center bg-background text-muted-foreground">
+      <div className="grid min-h-screen place-items-center bg-background text-muted-foreground">
         Loading studio…
       </div>
     );
@@ -171,7 +171,7 @@ function StudioDashboard() {
 
   if (!isCreator) {
     return (
-      <div className="theme-dark grid min-h-screen place-items-center bg-background px-4 text-center">
+      <div className="grid min-h-screen place-items-center bg-background px-4 text-center">
         <div>
           <p className="text-lg font-bold text-foreground">
             {profile ? "This page is for creators only." : "Please log in as a creator to access the Studio."}
@@ -192,7 +192,7 @@ function StudioDashboard() {
   }
 
   return (
-    <div className="theme-dark min-h-screen bg-background pb-24 md:pb-10">
+    <div className="min-h-screen bg-background pb-24 md:pb-10">
       <AppHeader />
 
       <main className="mx-auto max-w-6xl px-4 py-5">
