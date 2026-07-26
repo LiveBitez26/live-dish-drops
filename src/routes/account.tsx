@@ -64,19 +64,6 @@ function AccountPage() {
       <main className="mx-auto max-w-2xl px-4 py-6">
         <ProfileHeader profile={profile} />
 
-        {!isCreator && (
-          <Link
-            to="/become-creator"
-            className="mb-6 flex items-center justify-between rounded-2xl border border-primary/40 bg-primary/10 px-4 py-3 text-sm hover:border-primary"
-          >
-            <span>
-              <span className="font-bold text-primary">Have a kitchen?</span>{" "}
-              <span className="text-muted-foreground">Become a creator and start going live.</span>
-            </span>
-            <span className="font-bold text-primary">Apply →</span>
-          </Link>
-        )}
-
         <div className="mb-6 flex gap-1 overflow-x-auto rounded-xl border border-border bg-surface p-1">
           <TabBtn active={tab === "addresses"} onClick={() => setTab("addresses")} icon={<MapPin className="h-4 w-4" />}>
             Addresses
@@ -100,6 +87,19 @@ function AccountPage() {
         {tab === "orders" && <OrdersTab />}
         {tab === "following" && <FollowingTab />}
         {tab === "settings" && <NotificationsTab profile={profile} />}
+
+        {!isCreator && (
+          <Link
+            to="/become-creator"
+            className="mt-8 flex items-center justify-between rounded-2xl border border-border bg-surface px-4 py-3 text-sm hover:border-primary/40"
+          >
+            <span>
+              <span className="font-bold">Have a kitchen?</span>{" "}
+              <span className="text-muted-foreground">Become a creator and start going live.</span>
+            </span>
+            <span className="font-bold text-primary">Apply →</span>
+          </Link>
+        )}
       </main>
     </div>
   );
