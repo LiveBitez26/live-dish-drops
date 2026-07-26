@@ -19,9 +19,10 @@ function LoginPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      await signIn(email, password);
+      const profile = await signIn(email, password);
       toast.success("Welcome back!");
-      navigate({ to: "/studio" });
+      const isCreator = (profile as any)?.role === "creator";
+      navigate({ to: isCreator ? "/studio" : "/" });
     } catch (err) {
       toast.error("Login failed", { description: (err as Error).message });
     } finally {

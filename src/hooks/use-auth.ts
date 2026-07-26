@@ -31,7 +31,9 @@ export function useAuth() {
     isCreator: profile?.role === "creator",
     signIn: async (email: string, password: string) => {
       await signIn({ data: { email, password } });
-      await refresh();
+      const current = await getCurrentUser();
+      setProfile(current);
+      return current;
     },
     signUp: async (email: string, password: string, fullName: string, role: "customer" | "creator") => {
       await signUp({ data: { email, password, fullName, role } });
