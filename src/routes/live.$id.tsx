@@ -67,13 +67,24 @@ function LiveView() {
             </div>
 
             {myOrder && myOrder.status !== "declined" && (
-              <div className="mt-2 flex items-center justify-between rounded-xl border border-primary/40 bg-primary/10 px-4 py-2.5 text-sm">
-                <span className="font-semibold text-foreground">
-                  Your order · ${myOrder.total_amount}
-                </span>
-                <span className="font-black uppercase tracking-widest text-primary">
-                  {myOrder.status.replace("_", " ")}
-                </span>
+              <div className="mt-2 rounded-xl border border-primary/40 bg-primary/10 px-4 py-2.5 text-sm">
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold text-foreground">
+                    Your order · ${myOrder.total_amount}
+                  </span>
+                  <span className="font-black uppercase tracking-widest text-primary">
+                    {myOrder.status.replace("_", " ")}
+                  </span>
+                </div>
+                {(myOrder as any).estimated_ready_at && (
+                  <div className="mt-0.5 text-xs text-muted-foreground">
+                    Ready around{" "}
+                    {new Date((myOrder as any).estimated_ready_at).toLocaleTimeString([], {
+                      hour: "numeric",
+                      minute: "2-digit",
+                    })}
+                  </div>
+                )}
               </div>
             )}
 

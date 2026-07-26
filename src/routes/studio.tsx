@@ -142,8 +142,17 @@ function StudioDashboard() {
   }
 
   async function acceptOrder(orderId: string) {
+    const minutesInput = window.prompt("Ready for pickup in how many minutes?", "15");
+    if (minutesInput === null) return; // cancelled
+    const readyInMinutes = Number(minutesInput);
     try {
-      await updateOrderStatus({ data: { orderId, status: "accepted" } });
+      await updateOrderStatus({
+        data: {
+          orderId,
+          status: "accepted",
+          readyInMinutes: Number.isFinite(readyInMinutes) && readyInMinutes > 0 ? readyInMinutes : undefined,
+        },
+      });
       toast.success(`Order accepted — dispatching delivery`);
     } catch (err) {
       toast.error("Couldn't accept order", { description: (err as Error).message });
@@ -386,8 +395,13 @@ function StudioDashboard() {
                     </div>
                   )}
                   {o.status !== "pending" && (
-                    <div className="mt-2 text-[11px] font-bold uppercase tracking-widest text-primary">
-                      {o.status.replace("_", " ")}
+                    <div className="mt-2 flex items-center justify-between text-[11px] font-bold uppercase tracking-widest text-primary">
+                      <span>{o.status.replace("_", " ")}</span>
+                      {o.estimated_ready_at && (
+                        <span className="normal-case text-muted-foreground">
+                          Ready {new Date(o.estimated_ready_at).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
+                        </span>
+                      )}
                     </div>
                   )}
                 </li>

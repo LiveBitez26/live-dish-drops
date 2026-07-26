@@ -75,6 +75,11 @@ export async function dispatchDoorDashDelivery(order: Order) {
   }
 
   const delivery = (await response.json()) as { delivery_id: string };
+  // TODO once real DoorDash API access exists: the actual dispatch response
+  // includes courier name/phone/tracking URL — save those here too, e.g.:
+  //   courier_name: delivery.dasher?.name, courier_phone: delivery.dasher?.phone_number,
+  //   courier_tracking_url: delivery.tracking_url
+  // Then they'll automatically show up everywhere estimated_ready_at does.
   await supabase.from("orders").update({ doordash_delivery_id: delivery.delivery_id }).eq("id", order.id);
   return delivery;
 }

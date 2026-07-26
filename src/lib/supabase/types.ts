@@ -206,6 +206,10 @@ export interface Database {
           stripe_payment_intent_id: string | null;
           stripe_checkout_session_id: string | null;
           doordash_delivery_id: string | null;
+          estimated_ready_at: string | null;
+          courier_name: string | null;
+          courier_phone: string | null;
+          courier_tracking_url: string | null;
           delivery_address: Record<string, unknown> | null;
           created_at: string;
           updated_at: string;

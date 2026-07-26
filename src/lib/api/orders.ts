@@ -6,6 +6,7 @@ import { dispatchDoorDashDelivery } from "@/lib/api/doordash";
 const updateStatusSchema = z.object({
   orderId: z.string().uuid(),
   status: z.enum(["accepted", "declined", "preparing", "out_for_delivery", "delivered"]),
+  readyInMinutes: z.number().int().positive().max(240).optional(),
 });
 
 /**
@@ -34,9 +35,14 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
       throw new Error("FORBIDDEN");
     }
 
+    const updates: Record<string, unknown> = { status: data.status };
+    if (data.readyInMinutes) {
+      updates.estimated_ready_at = new Date(Date.now() + data.readyInMinutes * 60_000).toISOString();
+    }
+
     const { data: updated, error } = await supabase
       .from("orders")
-      .update({ status: data.status })
+      .update(updates)
       .eq("id", data.orderId)
       .select()
       .single();

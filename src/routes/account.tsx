@@ -543,6 +543,13 @@ function OrdersTab() {
           <div className="mt-2 flex items-center justify-between">
             <span className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
               {o.status.replace("_", " ")} · {new Date(o.created_at).toLocaleDateString()}
+              {o.estimated_ready_at && (
+                <>
+                  {" "}
+                  · Ready{" "}
+                  {new Date(o.estimated_ready_at).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
+                </>
+              )}
             </span>
             {o.status === "delivered" && (!o.reviews || o.reviews.length === 0) && (
               <span className="text-[11px] font-bold text-primary">Leave a review on the creator's page →</span>
