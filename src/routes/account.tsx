@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { MapPin, Plus, Trash2, Star, Heart, Package, Bell } from "lucide-react";
+import { MapPin, Plus, Trash2, Star, Heart, Package, Bell, CreditCard } from "lucide-react";
 import { AppHeader } from "@/components/livebite/AppHeader";
 import { useAuth } from "@/hooks/use-auth";
 import {
@@ -15,6 +15,7 @@ import {
   updateMyProfile,
   updateMyAvatar,
 } from "@/lib/api/customer-profile";
+import { getMyPaymentMethods, createSetupIntent, deletePaymentMethod } from "@/lib/api/payments";
 import { cn } from "@/lib/utils";
 import { uploadImage } from "@/lib/storage";
 
@@ -22,14 +23,14 @@ export const Route = createFileRoute("/account")({
   component: AccountPage,
 });
 
-type TabKey = "addresses" | "orders" | "following" | "settings";
+type TabKey = "addresses" | "payment" | "orders" | "following" | "settings";
 
 function AccountPage() {
   const { profile, loading } = useAuth();
   const [tab, setTab] = useState<TabKey>(() => {
     if (typeof window === "undefined") return "addresses";
     const t = new URLSearchParams(window.location.search).get("tab");
-    return (["addresses", "orders", "following", "settings"] as const).includes(t as TabKey)
+    return (["addresses", "payment", "orders", "following", "settings"] as const).includes(t as TabKey)
       ? (t as TabKey)
       : "addresses";
   });
@@ -67,6 +68,9 @@ function AccountPage() {
           <TabBtn active={tab === "addresses"} onClick={() => setTab("addresses")} icon={<MapPin className="h-4 w-4" />}>
             Addresses
           </TabBtn>
+          <TabBtn active={tab === "payment"} onClick={() => setTab("payment")} icon={<CreditCard className="h-4 w-4" />}>
+            Payment
+          </TabBtn>
           <TabBtn active={tab === "orders"} onClick={() => setTab("orders")} icon={<Package className="h-4 w-4" />}>
             Orders
           </TabBtn>
@@ -79,6 +83,7 @@ function AccountPage() {
         </div>
 
         {tab === "addresses" && <AddressesTab />}
+        {tab === "payment" && <PaymentTab />}
         {tab === "orders" && <OrdersTab />}
         {tab === "following" && <FollowingTab />}
         {tab === "settings" && <NotificationsTab profile={profile} />}
@@ -402,6 +407,84 @@ function AddressesTab() {
           </div>
         </form>
       )}
+    </div>
+  );
+}
+
+function PaymentTab() {
+  const [methods, setMethods] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  async function refresh() {
+    setMethods(await getMyPaymentMethods());
+  }
+  useEffect(() => {
+    refresh();
+  }, []);
+
+  async function handleAddCard() {
+    setLoading(true);
+    try {
+      await createSetupIntent();
+      // Real Stripe keys are configured — the next step is opening Stripe's
+      // Payment Element to actually collect the card. That UI isn't built
+      // yet since there's nothing to test it against until Stripe is live.
+      toast("Stripe is connected — card entry form coming next.");
+    } catch (err) {
+      toast.error("Payments aren't connected yet", {
+        description: "The platform owner needs to add Stripe API keys before cards can be saved.",
+      });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="space-y-3">
+      {methods.map((m) => (
+        <div key={m.id} className="flex items-center gap-3 rounded-2xl border border-border bg-surface p-4">
+          <CreditCard className="h-5 w-5 shrink-0 text-primary" />
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+              <span className="font-bold capitalize">{m.brand}</span>
+              <span className="text-sm text-muted-foreground">•••• {m.last4}</span>
+              {m.is_default && (
+                <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold uppercase text-primary">
+                  Default
+                </span>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Expires {String(m.exp_month).padStart(2, "0")}/{m.exp_year}
+            </p>
+          </div>
+          <button
+            onClick={async () => {
+              await deletePaymentMethod({ data: { paymentMethodId: m.id } });
+              toast("Card removed");
+              refresh();
+            }}
+            className="text-destructive hover:opacity-80"
+            aria-label="Remove card"
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
+        </div>
+      ))}
+
+      {methods.length === 0 && (
+        <p className="rounded-2xl border border-dashed border-border bg-surface p-6 text-center text-sm text-muted-foreground">
+          No saved payment methods yet.
+        </p>
+      )}
+
+      <button
+        onClick={handleAddCard}
+        disabled={loading}
+        className="flex items-center gap-1.5 rounded-full border border-primary bg-primary/10 px-4 py-2 text-sm font-bold text-primary disabled:opacity-50"
+      >
+        <Plus className="h-4 w-4" /> {loading ? "Checking…" : "Add payment method"}
+      </button>
     </div>
   );
 }
