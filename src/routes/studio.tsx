@@ -207,6 +207,14 @@ function StudioDashboard() {
           <div className="flex items-center gap-3">
             {creatorId && (
               <Link
+                to="/studio-dashboard"
+                className="text-xs font-bold uppercase tracking-widest text-primary hover:underline"
+              >
+                Dashboard
+              </Link>
+            )}
+            {creatorId && (
+              <Link
                 to="/creator/$id"
                 params={{ id: creatorId }}
                 className="text-xs font-bold uppercase tracking-widest text-primary hover:underline"

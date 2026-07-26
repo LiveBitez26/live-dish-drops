@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as StudioDashboardRouteImport } from './routes/studio-dashboard'
 import { Route as StudioRouteImport } from './routes/studio'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as LoginRouteImport } from './routes/login'
@@ -20,6 +21,11 @@ import { Route as LiveIdRouteImport } from './routes/live.$id'
 import { Route as CreatorIdRouteImport } from './routes/creator.$id'
 import { Route as ApiStripeWebhookRouteImport } from './routes/api/stripe/webhook'
 
+const StudioDashboardRoute = StudioDashboardRouteImport.update({
+  id: '/studio-dashboard',
+  path: '/studio-dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const StudioRoute = StudioRouteImport.update({
   id: '/studio',
   path: '/studio',
@@ -78,6 +84,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/studio': typeof StudioRoute
+  '/studio-dashboard': typeof StudioDashboardRoute
   '/creator/$id': typeof CreatorIdRoute
   '/live/$id': typeof LiveIdRoute
   '/order/$id': typeof OrderIdRoute
@@ -90,6 +97,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/studio': typeof StudioRoute
+  '/studio-dashboard': typeof StudioDashboardRoute
   '/creator/$id': typeof CreatorIdRoute
   '/live/$id': typeof LiveIdRoute
   '/order/$id': typeof OrderIdRoute
@@ -103,6 +111,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/studio': typeof StudioRoute
+  '/studio-dashboard': typeof StudioDashboardRoute
   '/creator/$id': typeof CreatorIdRoute
   '/live/$id': typeof LiveIdRoute
   '/order/$id': typeof OrderIdRoute
@@ -117,6 +126,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/signup'
     | '/studio'
+    | '/studio-dashboard'
     | '/creator/$id'
     | '/live/$id'
     | '/order/$id'
@@ -129,6 +139,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/signup'
     | '/studio'
+    | '/studio-dashboard'
     | '/creator/$id'
     | '/live/$id'
     | '/order/$id'
@@ -141,6 +152,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/signup'
     | '/studio'
+    | '/studio-dashboard'
     | '/creator/$id'
     | '/live/$id'
     | '/order/$id'
@@ -154,6 +166,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
   StudioRoute: typeof StudioRoute
+  StudioDashboardRoute: typeof StudioDashboardRoute
   CreatorIdRoute: typeof CreatorIdRoute
   LiveIdRoute: typeof LiveIdRoute
   OrderIdRoute: typeof OrderIdRoute
@@ -162,6 +175,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/studio-dashboard': {
+      id: '/studio-dashboard'
+      path: '/studio-dashboard'
+      fullPath: '/studio-dashboard'
+      preLoaderRoute: typeof StudioDashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/studio': {
       id: '/studio'
       path: '/studio'
@@ -242,6 +262,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
   StudioRoute: StudioRoute,
+  StudioDashboardRoute: StudioDashboardRoute,
   CreatorIdRoute: CreatorIdRoute,
   LiveIdRoute: LiveIdRoute,
   OrderIdRoute: OrderIdRoute,
