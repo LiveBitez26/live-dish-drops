@@ -13,6 +13,7 @@ import {
   getMyFollowedCreators,
   updateNotificationPrefs,
   updateMyProfile,
+  updateMyAvatar,
 } from "@/lib/api/customer-profile";
 import { cn } from "@/lib/utils";
 
@@ -89,6 +90,7 @@ function ProfileHeader({ profile }: { profile: any }) {
   const [editing, setEditing] = useState(false);
   const [fullName, setFullName] = useState(profile.full_name ?? "");
   const [phone, setPhone] = useState(profile.phone_number ?? "");
+  const [avatarUrl, setAvatarUrl] = useState(profile.avatar_url ?? "");
   const [saving, setSaving] = useState(false);
 
   async function handleSave(e: React.FormEvent) {
@@ -96,6 +98,9 @@ function ProfileHeader({ profile }: { profile: any }) {
     setSaving(true);
     try {
       await updateMyProfile({ data: { fullName, phoneNumber: phone || undefined } });
+      if (avatarUrl !== (profile.avatar_url ?? "")) {
+        await updateMyAvatar({ data: { avatarUrl: avatarUrl || null } });
+      }
       toast.success("Profile updated");
       setEditing(false);
     } catch (err) {
@@ -109,12 +114,19 @@ function ProfileHeader({ profile }: { profile: any }) {
     return (
       <div className="mb-6">
         <div className="flex items-start justify-between">
-          <div>
-            <h1 className="text-2xl font-black tracking-tight">{profile.full_name ?? "My Account"}</h1>
-            <p className="text-sm text-muted-foreground">{profile.email}</p>
-            <p className="text-sm text-muted-foreground">
-              {profile.phone_number ? profile.phone_number : "No phone number on file"}
-            </p>
+          <div className="flex items-center gap-3">
+            <img
+              src={profile.avatar_url ?? `https://i.pravatar.cc/100?u=${profile.id}`}
+              alt=""
+              className="h-14 w-14 rounded-full border border-border object-cover"
+            />
+            <div>
+              <h1 className="text-2xl font-black tracking-tight">{profile.full_name ?? "My Account"}</h1>
+              <p className="text-sm text-muted-foreground">{profile.email}</p>
+              <p className="text-sm text-muted-foreground">
+                {profile.phone_number ? profile.phone_number : "No phone number on file"}
+              </p>
+            </div>
           </div>
           <button
             onClick={() => setEditing(true)}
@@ -129,6 +141,24 @@ function ProfileHeader({ profile }: { profile: any }) {
 
   return (
     <form onSubmit={handleSave} className="mb-6 space-y-3 rounded-2xl border border-border bg-surface p-4">
+      <div className="flex items-center gap-3">
+        <img
+          src={avatarUrl || `https://i.pravatar.cc/100?u=${profile.id}`}
+          alt=""
+          className="h-14 w-14 rounded-full border border-border object-cover"
+        />
+        <div className="flex-1">
+          <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-muted-foreground">
+            Profile picture URL
+          </label>
+          <input
+            value={avatarUrl}
+            onChange={(e) => setAvatarUrl(e.target.value)}
+            placeholder="https://…"
+            className="w-full rounded-lg border border-border bg-surface-elevated px-3 py-2 text-sm"
+          />
+        </div>
+      </div>
       <div>
         <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-muted-foreground">
           Full name

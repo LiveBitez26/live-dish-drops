@@ -150,6 +150,21 @@ export const updateMyProfile = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+export const updateMyAvatar = createServerFn({ method: "POST" })
+  .inputValidator(z.object({ avatarUrl: z.string().url().nullable() }))
+  .handler(async ({ data }) => {
+    const supabase = getSupabaseServerClient();
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData.user) throw new Error("UNAUTHENTICATED");
+
+    const { error } = await supabase
+      .from("profiles")
+      .update({ avatar_url: data.avatarUrl })
+      .eq("id", userData.user.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
 // --- Notification preferences -----------------------------------------------------
 
 const notifySchema = z.object({
