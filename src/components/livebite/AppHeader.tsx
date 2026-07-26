@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { MapPin, Search, User, ChevronDown, Flame, LogOut, UtensilsCrossed, UserCog, Plus } from "lucide-react";
+import { MapPin, Search, User, ChevronDown, Flame, LogOut, UtensilsCrossed, UserCog, Plus, ShieldCheck } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { getMyAddresses, setDefaultAddress } from "@/lib/api/customer-profile";
 
@@ -169,6 +169,15 @@ export function AppHeader() {
                   >
                     <UserCog className="h-4 w-4" /> My Account
                   </Link>
+                  {(profile as any).is_admin && (
+                    <Link
+                      to="/admin"
+                      onClick={() => setMenuOpen(false)}
+                      className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-surface-elevated"
+                    >
+                      <ShieldCheck className="h-4 w-4" /> Admin
+                    </Link>
+                  )}
                   <button
                     onClick={async () => {
                       setMenuOpen(false);

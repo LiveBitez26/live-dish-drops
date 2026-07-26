@@ -28,6 +28,7 @@ export interface Database {
           notify_order_updates: boolean;
           phone_number: string | null;
           stripe_customer_id: string | null;
+          is_admin: boolean;
           created_at: string;
         };
         Insert: Partial<Database["public"]["Tables"]["profiles"]["Row"]> & { id: string; email: string };
