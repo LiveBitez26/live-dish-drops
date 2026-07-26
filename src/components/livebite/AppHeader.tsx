@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { MapPin, Search, User, ChevronDown, Flame, LogOut, UtensilsCrossed, UserCog, Plus, ShieldCheck } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { getMyAddresses, setDefaultAddress } from "@/lib/api/customer-profile";
+import { search } from "@/lib/api/search";
 
 export function AppHeader() {
   const { profile, isCreator, signOut } = useAuth();
@@ -10,6 +11,10 @@ export function AppHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [addressMenuOpen, setAddressMenuOpen] = useState(false);
   const [addresses, setAddresses] = useState<any[]>([]);
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<{ creators: any[]; dishes: any[] } | null>(null);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searching, setSearching] = useState(false);
 
   useEffect(() => {
     if (profile) {
@@ -18,6 +23,23 @@ export function AppHeader() {
       setAddresses([]);
     }
   }, [profile]);
+
+  useEffect(() => {
+    if (!query.trim()) {
+      setResults(null);
+      return;
+    }
+    setSearching(true);
+    const handle = setTimeout(() => {
+      search({ data: { query: query.trim() } })
+        .then((r) => {
+          setResults(r);
+          setSearching(false);
+        })
+        .catch(() => setSearching(false));
+    }, 300);
+    return () => clearTimeout(handle);
+  }, [query]);
 
   const defaultAddress = addresses.find((a) => a.is_default) ?? addresses[0];
   const addressLabel = !profile
@@ -108,12 +130,86 @@ export function AppHeader() {
           )}
         </div>
 
-        <div className="flex min-w-0 flex-1 items-center gap-2 rounded-full border border-border bg-surface px-3 py-1.5">
-          <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
-          <input
-            placeholder="Search creators, dishes, cuisines…"
-            className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
-          />
+        <div className="relative min-w-0 flex-1">
+          <div className="flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1.5">
+            <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
+            <input
+              value={query}
+              onChange={(e) => {
+                setQuery(e.target.value);
+                setSearchOpen(true);
+              }}
+              onFocus={() => setSearchOpen(true)}
+              placeholder="Search creators, dishes, cuisines…"
+              className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+            />
+          </div>
+          {searchOpen && query.trim() && (
+            <>
+              <div className="fixed inset-0 z-40" onClick={() => setSearchOpen(false)} />
+              <div className="absolute left-0 right-0 z-50 mt-2 max-h-96 overflow-y-auto rounded-xl border border-border bg-surface shadow-lg">
+                {searching && <p className="px-3 py-3 text-sm text-muted-foreground">Searching…</p>}
+                {!searching && results && results.creators.length === 0 && results.dishes.length === 0 && (
+                  <p className="px-3 py-3 text-sm text-muted-foreground">No results for "{query}"</p>
+                )}
+                {!searching && results && results.creators.length > 0 && (
+                  <div>
+                    <div className="px-3 pt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                      Creators
+                    </div>
+                    {results.creators.map((c: any) => (
+                      <Link
+                        key={c.id}
+                        to="/creator/$id"
+                        params={{ id: c.id }}
+                        onClick={() => setSearchOpen(false)}
+                        className="flex items-center gap-2.5 px-3 py-2 hover:bg-surface-elevated"
+                      >
+                        <img
+                          src={c.profiles?.avatar_url ?? `https://i.pravatar.cc/60?u=${c.id}`}
+                          alt=""
+                          className="h-8 w-8 rounded-full object-cover"
+                        />
+                        <div className="min-w-0">
+                          <div className="truncate text-sm font-bold">
+                            @{c.handle} {c.is_live && <span className="text-destructive">· Live</span>}
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+                {!searching && results && results.dishes.length > 0 && (
+                  <div>
+                    <div className="px-3 pt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                      Dishes
+                    </div>
+                    {results.dishes.map((d: any) => (
+                      <Link
+                        key={d.id}
+                        to="/creator/$id"
+                        params={{ id: d.creator_id }}
+                        onClick={() => setSearchOpen(false)}
+                        className="flex items-center gap-2.5 px-3 py-2 hover:bg-surface-elevated"
+                      >
+                        <img
+                          src={d.image_url ?? "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100&q=60"}
+                          alt=""
+                          className="h-8 w-8 rounded-lg object-cover"
+                        />
+                        <div className="min-w-0">
+                          <div className="truncate text-sm font-bold">{d.name}</div>
+                          <div className="truncate text-xs text-muted-foreground">
+                            ${d.price} · @{d.creators?.handle}
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </>
+          )}
         </div>
 
         {!profile ? (
