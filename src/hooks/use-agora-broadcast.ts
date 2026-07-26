@@ -12,9 +12,12 @@ type BroadcastState = "idle" | "connecting" | "live" | "error";
 export function useAgoraBroadcast() {
   const clientRef = useRef<any>(null);
   const tracksRef = useRef<{ audio: any; video: any } | null>(null);
+  const cameraListRef = useRef<any[]>([]);
+  const cameraIndexRef = useRef(0);
   const [state, setState] = useState<BroadcastState>("idle");
   const [micOn, setMicOn] = useState(true);
   const [camOn, setCamOn] = useState(true);
+  const [hasMultipleCameras, setHasMultipleCameras] = useState(false);
 
   async function start(channelName: string, previewEl: HTMLElement) {
     setState("connecting");
@@ -39,6 +42,15 @@ export function useAgoraBroadcast() {
       clientRef.current = client;
       tracksRef.current = { audio: audioTrack, video: videoTrack };
       setState("live");
+
+      // Detect how many cameras are available (for the flip-camera button on mobile).
+      try {
+        const cameras = await AgoraRTC.getCameras();
+        cameraListRef.current = cameras;
+        setHasMultipleCameras(cameras.length > 1);
+      } catch {
+        // non-fatal — flip button just won't show
+      }
     } catch (err) {
       console.error("Agora broadcast failed to start:", err);
       toast.error("Broadcast failed to start", {
@@ -81,9 +93,19 @@ export function useAgoraBroadcast() {
   async function switchCamera(deviceId: string) {
     try {
       await tracksRef.current?.video?.setDevice(deviceId);
+      const idx = cameraListRef.current.findIndex((c) => c.deviceId === deviceId);
+      if (idx >= 0) cameraIndexRef.current = idx;
     } catch (err) {
       toast.error("Couldn't switch camera", { description: (err as Error).message });
     }
+  }
+
+  /** One-tap flip between cameras (front/back on a phone). No-op if only one camera exists. */
+  async function flipCamera() {
+    const cameras = cameraListRef.current;
+    if (cameras.length < 2) return;
+    const nextIndex = (cameraIndexRef.current + 1) % cameras.length;
+    await switchCamera(cameras[nextIndex].deviceId);
   }
 
   async function switchMicrophone(deviceId: string) {
@@ -103,5 +125,18 @@ export function useAgoraBroadcast() {
     };
   }, []);
 
-  return { state, micOn, camOn, start, stop, toggleMic, toggleCam, listDevices, switchCamera, switchMicrophone };
+  return {
+    state,
+    micOn,
+    camOn,
+    hasMultipleCameras,
+    start,
+    stop,
+    toggleMic,
+    toggleCam,
+    listDevices,
+    switchCamera,
+    switchMicrophone,
+    flipCamera,
+  };
 }

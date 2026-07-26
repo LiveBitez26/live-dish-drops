@@ -8,6 +8,7 @@ import {
   Mic,
   MicOff,
   Radio,
+  RefreshCw,
   Settings,
   Trash2,
   Users,
@@ -282,6 +283,15 @@ function StudioDashboard() {
                   <div className="flex gap-2">
                     <IconToggle active={mic} onClick={broadcast.toggleMic} onIcon={Mic} offIcon={MicOff} />
                     <IconToggle active={cam} onClick={broadcast.toggleCam} onIcon={Video} offIcon={VideoOff} />
+                    {broadcast.hasMultipleCameras && (
+                      <button
+                        onClick={broadcast.flipCamera}
+                        className="grid h-10 w-10 place-items-center rounded-full border border-white/20 bg-black/60 text-white hover:bg-black/80"
+                        aria-label="Flip camera"
+                      >
+                        <RefreshCw className="h-4 w-4" />
+                      </button>
+                    )}
                     <DeviceSettingsButton broadcast={broadcast} live={live} />
                   </div>
                   <button
