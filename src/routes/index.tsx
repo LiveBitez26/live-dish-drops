@@ -5,10 +5,9 @@ import { Flame, Clock, Users, ChevronRight, Play, Heart, MessageCircle, Bell, Ca
 import { AppHeader } from "@/components/livebite/AppHeader";
 import { CartBanner } from "@/components/livebite/CartBanner";
 import { CommentDrawer } from "@/components/livebite/CommentDrawer";
-import { DAILY_FEED } from "@/lib/livebite-data";
-import type { DailyPost } from "@/lib/livebite-data";
 import { cn } from "@/lib/utils";
 import { getDiscoverCreators } from "@/lib/api/discover";
+import { useDailyFeed } from "@/hooks/use-daily-feed";
 
 type DiscoverCreator = Awaited<ReturnType<typeof getDiscoverCreators>>["creators"][number];
 
@@ -270,7 +269,8 @@ function LiveDropsView({
 }
 
 function DailyFeedView() {
-  const [openPost, setOpenPost] = useState<DailyPost | null>(null);
+  const { posts, loading } = useDailyFeed();
+  const [openPost, setOpenPost] = useState<any>(null);
   return (
     <section>
       <div className="mb-4 flex items-end justify-between gap-4">
@@ -287,33 +287,40 @@ function DailyFeedView() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-        {DAILY_FEED.map((p) => (
-          <FeedCard key={p.id} post={p} onOpenComments={() => setOpenPost(p)} />
-        ))}
-      </div>
+      {!loading && posts.length === 0 ? (
+        <p className="rounded-2xl border border-dashed border-border bg-surface p-10 text-center text-sm text-muted-foreground">
+          No posts yet — check back after creators start posting.
+        </p>
+      ) : (
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+          {posts.map((p: any) => (
+            <FeedCard key={p.id} post={p} onOpenComments={() => setOpenPost(p)} />
+          ))}
+        </div>
+      )}
 
       <CommentDrawer
         open={!!openPost}
         onClose={() => setOpenPost(null)}
-        postHandle={openPost?.handle ?? ""}
-        postImage={openPost?.image ?? ""}
+        postHandle={openPost?.creators?.handle ?? ""}
+        postImage={openPost?.media_url ?? ""}
         postCaption={openPost?.caption ?? ""}
       />
     </section>
   );
 }
 
-function FeedCard({ post, onOpenComments }: { post: DailyPost; onOpenComments: () => void }) {
-
-  const isDrop = post.kind === "drop";
-  const isClip = post.kind === "clip";
+function FeedCard({ post, onOpenComments }: { post: any; onOpenComments: () => void }) {
+  const isDrop = post.content_type === "upcoming_drop";
+  const isClip = post.content_type === "video";
+  const handle = post.creators?.handle;
+  const avatar = post.creators?.profiles?.avatar_url ?? `https://i.pravatar.cc/100?u=${post.creator_id}`;
   return (
     <article className="group overflow-hidden rounded-2xl border border-border bg-surface shadow-sm transition hover:border-primary/50 hover:shadow-md">
       <div className="relative aspect-[4/5] overflow-hidden">
         <img
-          src={post.image}
-          alt={post.caption}
+          src={post.media_url ?? "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&q=60"}
+          alt={post.caption ?? ""}
           className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20" />
@@ -322,7 +329,7 @@ function FeedCard({ post, onOpenComments }: { post: DailyPost; onOpenComments: (
         <div className="absolute left-2 top-2 flex items-center gap-1">
           {isClip && (
             <span className="flex items-center gap-1 rounded-full bg-black/70 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-white backdrop-blur">
-              <Play className="h-2.5 w-2.5" /> {post.duration}
+              <Play className="h-2.5 w-2.5" /> clip
             </span>
           )}
           {isDrop && (
@@ -330,7 +337,7 @@ function FeedCard({ post, onOpenComments }: { post: DailyPost; onOpenComments: (
               Upcoming
             </span>
           )}
-          {post.kind === "photo" && (
+          {post.content_type === "photo" && (
             <span className="rounded-full bg-black/70 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-white backdrop-blur">
               Photo
             </span>
@@ -338,81 +345,28 @@ function FeedCard({ post, onOpenComments }: { post: DailyPost; onOpenComments: (
         </div>
 
         {/* Creator */}
-        <Link
-          to="/creator/$id"
-          params={{ id: post.creatorId }}
-          className="absolute inset-x-2 bottom-2 flex items-center gap-2"
-        >
-          <img
-            src={post.avatar}
-            alt=""
-            className="h-7 w-7 rounded-full border-2 border-white/90 object-cover"
-          />
-          <span className="truncate text-xs font-bold text-white drop-shadow hover:underline">
-            {post.handle}
-          </span>
-        </Link>
-
+        {handle && (
+          <Link
+            to="/creator/$id"
+            params={{ id: post.creator_id }}
+            className="absolute inset-x-2 bottom-2 flex items-center gap-2"
+          >
+            <img src={avatar} alt="" className="h-7 w-7 rounded-full border-2 border-white/90 object-cover" />
+            <span className="truncate text-xs font-bold text-white drop-shadow hover:underline">@{handle}</span>
+          </Link>
+        )}
       </div>
 
       <div className="space-y-2.5 p-3">
         <p className="line-clamp-2 text-xs font-semibold leading-snug text-foreground">
           {post.caption}
         </p>
-
-        {isDrop && post.dropTime && (
-          <div className="flex items-center justify-between rounded-lg bg-primary/10 px-2.5 py-1.5">
-            <div className="min-w-0">
-              <div className="text-[10px] font-bold uppercase tracking-widest text-primary">
-                Drops
-              </div>
-              <div className="truncate text-xs font-black text-foreground">
-                {post.dropTime}
-              </div>
-            </div>
-            {post.price && (
-              <div className="shrink-0 text-sm font-black text-primary">
-                ${post.price}
-              </div>
-            )}
-          </div>
-        )}
-
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3 text-[11px] font-semibold text-muted-foreground">
-            <span className="flex items-center gap-1">
-              <Heart className="h-3 w-3" /> {post.likes.toLocaleString()}
-            </span>
-            <button
-              onClick={onOpenComments}
-              className="flex items-center gap-1 hover:text-primary"
-              aria-label="Open comments"
-            >
-              <MessageCircle className="h-3 w-3" /> {post.comments}
-            </button>
-
-          </div>
-          {isDrop ? (
-            <button
-              onClick={() =>
-                toast.success("You'll be notified", {
-                  description: `We'll ping you before ${post.handle}'s drop.`,
-                })
-              }
-              className="flex items-center gap-1 rounded-full bg-foreground px-2.5 py-1 text-[11px] font-bold text-background hover:opacity-90"
-            >
-              <Bell className="h-3 w-3" /> Notify
-            </button>
-          ) : (
-            <Link
-              to="/live/$id"
-              params={{ id: post.creatorId }}
-              className="rounded-full bg-primary px-2.5 py-1 text-[11px] font-bold text-primary-foreground hover:opacity-90"
-            >
-              Watch
-            </Link>
-          )}
-        </div>
+        <button
+          onClick={onOpenComments}
+          className="flex items-center gap-1 text-[11px] font-bold text-muted-foreground hover:text-primary"
+        >
+          <MessageCircle className="h-3 w-3" /> {post.likes_count ?? 0} likes
+        </button>
       </div>
     </article>
   );

@@ -16,7 +16,7 @@ export function useDailyFeed() {
 
     supabase
       .from("posts")
-      .select("*, creators(handle, profile_id, profiles(avatar_url))")
+      .select("*, creators(handle, profile_id, profiles!profile_id(avatar_url))")
       .order("created_at", { ascending: false })
       .limit(50)
       .then(({ data }) => {
