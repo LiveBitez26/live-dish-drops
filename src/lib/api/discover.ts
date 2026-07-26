@@ -12,7 +12,7 @@ export const getDiscoverCreators = createServerFn({ method: "GET" }).handler(asy
 
   const { data: creators, error } = await supabase
     .from("creators")
-    .select("*, profiles(avatar_url), menu_items(id, name, price, image_url, total_inventory, remaining_inventory)")
+    .select("*, profiles!profile_id(avatar_url), menu_items(id, name, price, image_url, total_inventory, remaining_inventory)")
     .order("is_live", { ascending: false })
     .order("follower_count", { ascending: false });
 

@@ -18,7 +18,7 @@ export const getCreatorPageData = createServerFn({ method: "GET" })
 
     const { data: creator, error } = await supabase
       .from("creators")
-      .select("*, profiles(full_name, avatar_url)")
+      .select("*, profiles!profile_id(full_name, avatar_url)")
       .eq("id", data.creatorId)
       .single();
     if (error || !creator) throw notFound();
@@ -42,7 +42,7 @@ export const getCreatorPageData = createServerFn({ method: "GET" })
 
     const { data: reviews, error: reviewsError } = await supabase
       .from("reviews")
-      .select("*, profiles(full_name)")
+      .select("*, profiles!customer_id(full_name)")
       .eq("creator_id", data.creatorId)
       .order("created_at", { ascending: false })
       .limit(50);

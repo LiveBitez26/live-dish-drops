@@ -116,7 +116,7 @@ export const getMyFollowedCreators = createServerFn({ method: "GET" }).handler(a
 
   const { data } = await supabase
     .from("follows")
-    .select("creator_id, creators(id, handle, is_live, rating, follower_count, profiles(avatar_url))")
+    .select("creator_id, creators(id, handle, is_live, rating, follower_count, profiles!profile_id(avatar_url))")
     .eq("follower_id", userData.user.id)
     .order("created_at", { ascending: false });
   return (data ?? []).map((row: any) => row.creators).filter(Boolean);
