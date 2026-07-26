@@ -216,6 +216,7 @@ function VerificationQueue() {
 
 function AllCreators() {
   const [creators, setCreators] = useState<any[]>([]);
+  const [query, setQuery] = useState("");
   useEffect(() => {
     getAllCreators().then(setCreators);
   }, []);
@@ -226,50 +227,99 @@ function AllCreators() {
     rejected: "text-destructive",
   };
 
+  const filtered = creators.filter((c: any) => {
+    const q = query.trim().toLowerCase();
+    if (!q) return true;
+    return (
+      c.handle.toLowerCase().includes(q) ||
+      c.profiles?.email?.toLowerCase().includes(q) ||
+      c.profiles?.full_name?.toLowerCase().includes(q)
+    );
+  });
+
   return (
-    <ul className="divide-y divide-border rounded-2xl border border-border bg-surface">
-      {creators.map((c: any) => (
-        <li key={c.id} className="flex items-center justify-between px-4 py-3 text-sm">
-          <div>
-            <span className="font-bold">@{c.handle}</span>{" "}
-            <span className="text-xs text-muted-foreground">· {c.profiles?.email}</span>
-          </div>
-          <span className={cn("text-xs font-bold uppercase tracking-widest", statusColor[c.verification_status])}>
-            {c.verification_status}
-          </span>
-        </li>
-      ))}
-    </ul>
+    <div>
+      <input
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        placeholder="Search by handle, name, or email…"
+        className="mb-3 w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm"
+      />
+      {filtered.length === 0 ? (
+        <p className="rounded-2xl border border-dashed border-border bg-surface p-6 text-center text-sm text-muted-foreground">
+          No creators match "{query}"
+        </p>
+      ) : (
+        <ul className="divide-y divide-border rounded-2xl border border-border bg-surface">
+          {filtered.map((c: any) => (
+            <li key={c.id} className="flex items-center justify-between px-4 py-3 text-sm">
+              <div>
+                <span className="font-bold">@{c.handle}</span>{" "}
+                <span className="text-xs text-muted-foreground">· {c.profiles?.email}</span>
+              </div>
+              <span className={cn("text-xs font-bold uppercase tracking-widest", statusColor[c.verification_status])}>
+                {c.verification_status}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
 }
 
 function AllOrders() {
   const [orders, setOrders] = useState<any[]>([]);
+  const [query, setQuery] = useState("");
   useEffect(() => {
     getAllOrders().then(setOrders);
   }, []);
+
+  const filtered = orders.filter((o: any) => {
+    const q = query.trim().toLowerCase();
+    if (!q) return true;
+    return (
+      o.creators?.handle?.toLowerCase().includes(q) ||
+      o.profiles?.email?.toLowerCase().includes(q) ||
+      o.status.toLowerCase().includes(q)
+    );
+  });
 
   if (orders.length === 0) {
     return <p className="text-sm text-muted-foreground">No orders yet.</p>;
   }
 
   return (
-    <ul className="divide-y divide-border rounded-2xl border border-border bg-surface">
-      {orders.map((o: any) => (
-        <li key={o.id} className="flex items-center justify-between px-4 py-3 text-sm">
-          <div className="min-w-0">
-            <div className="truncate">
-              <span className="font-bold">@{o.creators?.handle}</span>{" "}
-              <span className="text-xs text-muted-foreground">→ {o.profiles?.email}</span>
-            </div>
-            <div className="text-[11px] text-muted-foreground">{new Date(o.created_at).toLocaleString()}</div>
-          </div>
-          <div className="shrink-0 text-right">
-            <div className="font-bold text-primary">${o.total_amount}</div>
-            <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{o.status}</div>
-          </div>
-        </li>
-      ))}
-    </ul>
+    <div>
+      <input
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        placeholder="Search by creator, customer email, or status…"
+        className="mb-3 w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm"
+      />
+      {filtered.length === 0 ? (
+        <p className="rounded-2xl border border-dashed border-border bg-surface p-6 text-center text-sm text-muted-foreground">
+          No orders match "{query}"
+        </p>
+      ) : (
+        <ul className="divide-y divide-border rounded-2xl border border-border bg-surface">
+          {filtered.map((o: any) => (
+            <li key={o.id} className="flex items-center justify-between px-4 py-3 text-sm">
+              <div className="min-w-0">
+                <div className="truncate">
+                  <span className="font-bold">@{o.creators?.handle}</span>{" "}
+                  <span className="text-xs text-muted-foreground">→ {o.profiles?.email}</span>
+                </div>
+                <div className="text-[11px] text-muted-foreground">{new Date(o.created_at).toLocaleString()}</div>
+              </div>
+              <div className="shrink-0 text-right">
+                <div className="font-bold text-primary">${o.total_amount}</div>
+                <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{o.status}</div>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
 }
