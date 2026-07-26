@@ -9,12 +9,13 @@ export const getMyAddresses = createServerFn({ method: "GET" }).handler(async ()
   const { data: userData } = await supabase.auth.getUser();
   if (!userData.user) return [];
 
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("delivery_addresses")
     .select("*")
     .eq("profile_id", userData.user.id)
     .order("is_default", { ascending: false })
     .order("created_at", { ascending: false });
+  if (error) console.error("[getMyAddresses] failed:", error.message);
   return data ?? [];
 });
 
@@ -98,12 +99,13 @@ export const getMyOrderHistory = createServerFn({ method: "GET" }).handler(async
   const { data: userData } = await supabase.auth.getUser();
   if (!userData.user) return [];
 
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("orders")
     .select("*, creators(handle), reviews(id)")
     .eq("customer_id", userData.user.id)
     .order("created_at", { ascending: false })
     .limit(100);
+  if (error) console.error("[getMyOrderHistory] failed:", error.message);
   return data ?? [];
 });
 
@@ -114,11 +116,12 @@ export const getMyFollowedCreators = createServerFn({ method: "GET" }).handler(a
   const { data: userData } = await supabase.auth.getUser();
   if (!userData.user) return [];
 
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("follows")
     .select("creator_id, creators(id, handle, is_live, rating, follower_count, profiles!profile_id(avatar_url))")
     .eq("follower_id", userData.user.id)
     .order("created_at", { ascending: false });
+  if (error) console.error("[getMyFollowedCreators] failed:", error.message);
   return (data ?? []).map((row: any) => row.creators).filter(Boolean);
 });
 
