@@ -282,9 +282,7 @@ function StudioDashboard() {
                   <div className="flex gap-2">
                     <IconToggle active={mic} onClick={broadcast.toggleMic} onIcon={Mic} offIcon={MicOff} />
                     <IconToggle active={cam} onClick={broadcast.toggleCam} onIcon={Video} offIcon={VideoOff} />
-                    <button className="grid h-10 w-10 place-items-center rounded-full border border-white/20 bg-black/60 text-white hover:bg-black/80">
-                      <Settings className="h-4 w-4" />
-                    </button>
+                    <DeviceSettingsButton broadcast={broadcast} live={live} />
                   </div>
                   <button
                     onClick={toggleLive}
@@ -1129,5 +1127,82 @@ function AddMenuItemForm({ creatorId }: { creatorId: string }) {
         </button>
       </div>
     </form>
+  );
+}
+
+function DeviceSettingsButton({ broadcast, live }: { broadcast: ReturnType<typeof useAgoraBroadcast>; live: boolean }) {
+  const [open, setOpen] = useState(false);
+  const [cameras, setCameras] = useState<any[]>([]);
+  const [microphones, setMicrophones] = useState<any[]>([]);
+  const [loaded, setLoaded] = useState(false);
+
+  async function handleOpen() {
+    const next = !open;
+    setOpen(next);
+    if (next && !loaded && live) {
+      try {
+        const devices = await broadcast.listDevices();
+        setCameras(devices.cameras);
+        setMicrophones(devices.microphones);
+        setLoaded(true);
+      } catch (err) {
+        toast.error("Couldn't list devices", { description: (err as Error).message });
+      }
+    }
+  }
+
+  return (
+    <div className="relative">
+      <button
+        onClick={handleOpen}
+        className="grid h-10 w-10 place-items-center rounded-full border border-white/20 bg-black/60 text-white hover:bg-black/80"
+        aria-label="Camera & microphone settings"
+      >
+        <Settings className="h-4 w-4" />
+      </button>
+      {open && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+          <div className="absolute bottom-12 left-0 z-50 w-64 rounded-xl border border-border bg-surface p-3 text-foreground shadow-xl">
+            {!live ? (
+              <p className="text-xs text-muted-foreground">Go live first to choose your camera and mic.</p>
+            ) : (
+              <>
+                <div className="mb-3">
+                  <label className="mb-1 block text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                    Camera
+                  </label>
+                  <select
+                    onChange={(e) => broadcast.switchCamera(e.target.value)}
+                    className="w-full rounded-lg border border-border bg-surface-elevated px-2 py-1.5 text-xs"
+                  >
+                    {cameras.map((c) => (
+                      <option key={c.deviceId} value={c.deviceId}>
+                        {c.label || "Camera"}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="mb-1 block text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                    Microphone
+                  </label>
+                  <select
+                    onChange={(e) => broadcast.switchMicrophone(e.target.value)}
+                    className="w-full rounded-lg border border-border bg-surface-elevated px-2 py-1.5 text-xs"
+                  >
+                    {microphones.map((m) => (
+                      <option key={m.deviceId} value={m.deviceId}>
+                        {m.label || "Microphone"}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </>
+            )}
+          </div>
+        </>
+      )}
+    </div>
   );
 }

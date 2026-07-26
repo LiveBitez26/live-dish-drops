@@ -71,6 +71,29 @@ export function useAgoraBroadcast() {
     setCamOn(next);
   }
 
+  /** Lists available camera/mic devices — call after start(), needs mic/camera permission already granted. */
+  async function listDevices() {
+    const AgoraRTC = (await import("agora-rtc-sdk-ng")).default;
+    const [cameras, microphones] = await Promise.all([AgoraRTC.getCameras(), AgoraRTC.getMicrophones()]);
+    return { cameras, microphones };
+  }
+
+  async function switchCamera(deviceId: string) {
+    try {
+      await tracksRef.current?.video?.setDevice(deviceId);
+    } catch (err) {
+      toast.error("Couldn't switch camera", { description: (err as Error).message });
+    }
+  }
+
+  async function switchMicrophone(deviceId: string) {
+    try {
+      await tracksRef.current?.audio?.setDevice(deviceId);
+    } catch (err) {
+      toast.error("Couldn't switch microphone", { description: (err as Error).message });
+    }
+  }
+
   useEffect(() => {
     return () => {
       // best-effort cleanup if the component unmounts mid-stream
@@ -80,5 +103,5 @@ export function useAgoraBroadcast() {
     };
   }, []);
 
-  return { state, micOn, camOn, start, stop, toggleMic, toggleCam };
+  return { state, micOn, camOn, start, stop, toggleMic, toggleCam, listDevices, switchCamera, switchMicrophone };
 }
