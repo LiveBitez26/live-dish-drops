@@ -149,6 +149,50 @@ export const deleteScheduledDrop = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+// --- Become a creator (upgrade an existing foodie account) -----------------------
+
+const becomeCreatorSchema = z.object({
+  handle: z.string().min(1).max(30),
+  kitchenType: z.enum(["licensed_commercial", "food_truck", "ghost_kitchen", "home_kitchen"]),
+  businessName: z.string().max(120).optional(),
+  permitNumber: z.string().max(60).optional(),
+});
+
+export const becomeCreator = createServerFn({ method: "POST" })
+  .inputValidator(becomeCreatorSchema)
+  .handler(async ({ data }) => {
+    const supabase = getSupabaseServerClient();
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData.user) throw new Error("UNAUTHENTICATED");
+
+    const { data: existing } = await supabase
+      .from("creators")
+      .select("id")
+      .eq("profile_id", userData.user.id)
+      .maybeSingle();
+    if (existing) throw new Error("You already have a creator profile.");
+
+    const { data: creator, error } = await supabase
+      .from("creators")
+      .insert({
+        profile_id: userData.user.id,
+        handle: data.handle.trim().replace(/\s+/g, ""),
+        kitchen_type: data.kitchenType,
+        business_name: data.businessName?.trim() || null,
+        permit_number: data.permitNumber?.trim() || null,
+      })
+      .select()
+      .single();
+    if (error) {
+      if (error.message.includes("handle")) throw new Error("That handle is already taken — try a different one.");
+      throw new Error(error.message);
+    }
+
+    await supabase.from("profiles").update({ role: "creator" }).eq("id", userData.user.id);
+
+    return creator;
+  });
+
 // --- Profile editing ----------------------------------------------------------
 
 const updateProfileSchema = z.object({

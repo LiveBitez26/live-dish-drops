@@ -153,6 +153,15 @@ export function AppHeader() {
                       <UtensilsCrossed className="h-4 w-4" /> Creator Studio
                     </Link>
                   )}
+                  {!isCreator && (
+                    <Link
+                      to="/become-creator"
+                      onClick={() => setMenuOpen(false)}
+                      className="flex items-center gap-2 px-3 py-2 text-sm text-primary hover:bg-surface-elevated"
+                    >
+                      <UtensilsCrossed className="h-4 w-4" /> Become a Creator
+                    </Link>
+                  )}
                   <Link
                     to="/account"
                     onClick={() => setMenuOpen(false)}

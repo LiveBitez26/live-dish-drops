@@ -26,7 +26,7 @@ export const Route = createFileRoute("/account")({
 type TabKey = "addresses" | "payment" | "orders" | "following" | "settings";
 
 function AccountPage() {
-  const { profile, loading } = useAuth();
+  const { profile, loading, isCreator } = useAuth();
   const [tab, setTab] = useState<TabKey>(() => {
     if (typeof window === "undefined") return "addresses";
     const t = new URLSearchParams(window.location.search).get("tab");
@@ -63,6 +63,19 @@ function AccountPage() {
       <AppHeader />
       <main className="mx-auto max-w-2xl px-4 py-6">
         <ProfileHeader profile={profile} />
+
+        {!isCreator && (
+          <Link
+            to="/become-creator"
+            className="mb-6 flex items-center justify-between rounded-2xl border border-primary/40 bg-primary/10 px-4 py-3 text-sm hover:border-primary"
+          >
+            <span>
+              <span className="font-bold text-primary">Have a kitchen?</span>{" "}
+              <span className="text-muted-foreground">Become a creator and start going live.</span>
+            </span>
+            <span className="font-bold text-primary">Apply →</span>
+          </Link>
+        )}
 
         <div className="mb-6 flex gap-1 overflow-x-auto rounded-xl border border-border bg-surface p-1">
           <TabBtn active={tab === "addresses"} onClick={() => setTab("addresses")} icon={<MapPin className="h-4 w-4" />}>

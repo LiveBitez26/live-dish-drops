@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as StudioRouteImport } from './routes/studio'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as BecomeCreatorRouteImport } from './routes/become-creator'
 import { Route as AccountRouteImport } from './routes/account'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as OrderIdRouteImport } from './routes/order.$id'
@@ -32,6 +33,11 @@ const SignupRoute = SignupRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BecomeCreatorRoute = BecomeCreatorRouteImport.update({
+  id: '/become-creator',
+  path: '/become-creator',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AccountRoute = AccountRouteImport.update({
@@ -68,6 +74,7 @@ const ApiStripeWebhookRoute = ApiStripeWebhookRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
+  '/become-creator': typeof BecomeCreatorRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/studio': typeof StudioRoute
@@ -79,6 +86,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
+  '/become-creator': typeof BecomeCreatorRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/studio': typeof StudioRoute
@@ -91,6 +99,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/account': typeof AccountRoute
+  '/become-creator': typeof BecomeCreatorRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/studio': typeof StudioRoute
@@ -104,6 +113,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/account'
+    | '/become-creator'
     | '/login'
     | '/signup'
     | '/studio'
@@ -115,6 +125,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/account'
+    | '/become-creator'
     | '/login'
     | '/signup'
     | '/studio'
@@ -126,6 +137,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/account'
+    | '/become-creator'
     | '/login'
     | '/signup'
     | '/studio'
@@ -138,6 +150,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AccountRoute: typeof AccountRoute
+  BecomeCreatorRoute: typeof BecomeCreatorRoute
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
   StudioRoute: typeof StudioRoute
@@ -168,6 +181,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/become-creator': {
+      id: '/become-creator'
+      path: '/become-creator'
+      fullPath: '/become-creator'
+      preLoaderRoute: typeof BecomeCreatorRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/account': {
@@ -218,6 +238,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AccountRoute: AccountRoute,
+  BecomeCreatorRoute: BecomeCreatorRoute,
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
   StudioRoute: StudioRoute,
