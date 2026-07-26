@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { MapPin, Search, User, ChevronDown, Flame, LogOut, UtensilsCrossed } from "lucide-react";
+import { MapPin, Search, User, ChevronDown, Flame, LogOut, UtensilsCrossed, UserCog } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 
 export function AppHeader() {
@@ -67,6 +67,13 @@ export function AppHeader() {
                       <UtensilsCrossed className="h-4 w-4" /> Creator Studio
                     </Link>
                   )}
+                  <Link
+                    to="/account"
+                    onClick={() => setMenuOpen(false)}
+                    className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-surface-elevated"
+                  >
+                    <UserCog className="h-4 w-4" /> My Account
+                  </Link>
                   <button
                     onClick={async () => {
                       setMenuOpen(false);

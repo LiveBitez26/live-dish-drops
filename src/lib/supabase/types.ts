@@ -24,6 +24,8 @@ export interface Database {
           role: ProfileRole;
           full_name: string | null;
           avatar_url: string | null;
+          notify_new_drops: boolean;
+          notify_order_updates: boolean;
           created_at: string;
         };
         Insert: Partial<Database["public"]["Tables"]["profiles"]["Row"]> & { id: string; email: string };
@@ -110,6 +112,31 @@ export interface Database {
         };
         Insert: { post_id: string; author_id: string; body: string };
         Update: Partial<Database["public"]["Tables"]["post_comments"]["Row"]>;
+      };
+      delivery_addresses: {
+        Row: {
+          id: string;
+          profile_id: string;
+          label: string;
+          line1: string;
+          line2: string | null;
+          city: string;
+          state: string;
+          zip: string;
+          is_default: boolean;
+          created_at: string;
+        };
+        Insert: {
+          profile_id: string;
+          label: string;
+          line1: string;
+          line2?: string | null;
+          city: string;
+          state: string;
+          zip: string;
+          is_default?: boolean;
+        };
+        Update: Partial<Database["public"]["Tables"]["delivery_addresses"]["Row"]>;
       };
       follows: {
         Row: { follower_id: string; creator_id: string; created_at: string };
