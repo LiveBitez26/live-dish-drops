@@ -155,8 +155,8 @@ const updateProfileSchema = z.object({
   creatorId: z.string().uuid(),
   bio: z.string().max(500).optional(),
   location: z.string().max(200).optional(),
-  avatarUrl: z.string().url().optional(),
-  bannerUrl: z.string().url().optional(),
+  avatarUrl: z.string().url().nullable().optional(),
+  bannerUrl: z.string().url().nullable().optional(),
   deliveryRadiusMiles: z.number().min(0.5).max(50).optional(),
 });
 

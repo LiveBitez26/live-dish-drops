@@ -184,6 +184,15 @@ function ProfileHeader({ profile }: { profile: any }) {
             className="block w-full text-xs text-muted-foreground file:mr-3 file:rounded-full file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-xs file:font-bold file:text-primary-foreground"
           />
           {uploading && <p className="mt-1 text-xs text-muted-foreground">Uploading…</p>}
+          {avatarUrl && !uploading && (
+            <button
+              type="button"
+              onClick={() => setAvatarUrl("")}
+              className="mt-1.5 text-xs font-semibold text-destructive hover:underline"
+            >
+              Remove photo
+            </button>
+          )}
         </div>
       </div>
       <div>

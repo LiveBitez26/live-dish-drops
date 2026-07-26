@@ -502,6 +502,7 @@ function ToggleSwitch({
 function EditProfilePanel({ creatorId }: { creatorId: string }) {
   const { profile } = useAuth();
   const [open, setOpen] = useState(false);
+  const [loaded, setLoaded] = useState(false);
   const [bio, setBio] = useState("");
   const [location, setLocation] = useState("");
   const [bannerUrl, setBannerUrl] = useState("");
@@ -509,6 +510,26 @@ function EditProfilePanel({ creatorId }: { creatorId: string }) {
   const [deliveryRadius, setDeliveryRadius] = useState("5");
   const [uploading, setUploading] = useState<"avatar" | "banner" | null>(null);
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (!open || loaded) return;
+    const supabase = getSupabaseBrowserClient();
+    supabase
+      .from("creators")
+      .select("bio, location, banner_url, delivery_radius_miles, profiles(avatar_url)")
+      .eq("id", creatorId)
+      .single()
+      .then(({ data }) => {
+        if (data) {
+          setBio(data.bio ?? "");
+          setLocation(data.location ?? "");
+          setBannerUrl(data.banner_url ?? "");
+          setAvatarUrl((data as any).profiles?.avatar_url ?? "");
+          setDeliveryRadius(String(data.delivery_radius_miles ?? 5));
+        }
+        setLoaded(true);
+      });
+  }, [open, loaded, creatorId]);
 
   async function handleUpload(e: React.ChangeEvent<HTMLInputElement>, kind: "avatar" | "banner") {
     const file = e.target.files?.[0];
@@ -538,8 +559,8 @@ function EditProfilePanel({ creatorId }: { creatorId: string }) {
           creatorId,
           bio: bio || undefined,
           location: location || undefined,
-          bannerUrl: bannerUrl || undefined,
-          avatarUrl: avatarUrl || undefined,
+          bannerUrl: bannerUrl === "" ? null : bannerUrl || undefined,
+          avatarUrl: avatarUrl === "" ? null : avatarUrl || undefined,
           deliveryRadiusMiles: Number(deliveryRadius) || undefined,
         },
       });
@@ -561,7 +582,10 @@ function EditProfilePanel({ creatorId }: { creatorId: string }) {
         Edit profile
         <span className="text-xs">{open ? "Hide" : "Show"}</span>
       </button>
-      {open && (
+      {open && !loaded && (
+        <p className="border-t border-border p-4 text-sm text-muted-foreground">Loading your current profile…</p>
+      )}
+      {open && loaded && (
         <form onSubmit={handleSave} className="space-y-3 border-t border-border p-4">
           <div>
             <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-muted-foreground">Bio</label>
@@ -596,6 +620,15 @@ function EditProfilePanel({ creatorId }: { creatorId: string }) {
               className="block w-full text-xs text-muted-foreground file:mr-3 file:rounded-full file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-xs file:font-bold file:text-primary-foreground"
             />
             {uploading === "avatar" && <p className="mt-1 text-xs text-muted-foreground">Uploading…</p>}
+            {avatarUrl && uploading !== "avatar" && (
+              <button
+                type="button"
+                onClick={() => setAvatarUrl("")}
+                className="mt-1.5 text-xs font-semibold text-destructive hover:underline"
+              >
+                Remove photo
+              </button>
+            )}
           </div>
           <div>
             <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-muted-foreground">
@@ -610,6 +643,15 @@ function EditProfilePanel({ creatorId }: { creatorId: string }) {
               className="block w-full text-xs text-muted-foreground file:mr-3 file:rounded-full file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-xs file:font-bold file:text-primary-foreground"
             />
             {uploading === "banner" && <p className="mt-1 text-xs text-muted-foreground">Uploading…</p>}
+            {bannerUrl && uploading !== "banner" && (
+              <button
+                type="button"
+                onClick={() => setBannerUrl("")}
+                className="mt-1.5 text-xs font-semibold text-destructive hover:underline"
+              >
+                Remove photo
+              </button>
+            )}
           </div>
           <div>
             <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-muted-foreground">
