@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { MapPin, Plus, Trash2, Star, Heart, Package, Bell, CreditCard } from "lucide-react";
+import { MapPin, Plus, Trash2, Star, Heart, Package, Bell, CreditCard, UserRound } from "lucide-react";
 import { AppHeader } from "@/components/livebite/AppHeader";
 import { useAuth } from "@/hooks/use-auth";
 import {
@@ -140,11 +140,13 @@ function ProfileHeader({ profile }: { profile: any }) {
       <div className="mb-6">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
-            <img
-              src={profile.avatar_url ?? `https://i.pravatar.cc/100?u=${profile.id}`}
-              alt=""
-              className="h-14 w-14 rounded-full border border-border object-cover"
-            />
+            {profile.avatar_url ? (
+              <img src={profile.avatar_url} alt="" className="h-14 w-14 rounded-full border border-border object-cover" />
+            ) : (
+              <div className="grid h-14 w-14 place-items-center rounded-full border border-dashed border-border bg-surface-elevated text-muted-foreground">
+                <UserRound className="h-6 w-6" />
+              </div>
+            )}
             <div>
               <h1 className="text-2xl font-black tracking-tight">{profile.full_name ?? "My Account"}</h1>
               <p className="text-sm text-muted-foreground">{profile.email}</p>
@@ -167,11 +169,13 @@ function ProfileHeader({ profile }: { profile: any }) {
   return (
     <form onSubmit={handleSave} className="mb-6 space-y-3 rounded-2xl border border-border bg-surface p-4">
       <div className="flex items-center gap-3">
-        <img
-          src={avatarUrl || `https://i.pravatar.cc/100?u=${profile.id}`}
-          alt=""
-          className="h-14 w-14 shrink-0 rounded-full border border-border object-cover"
-        />
+        {avatarUrl ? (
+          <img src={avatarUrl} alt="" className="h-14 w-14 shrink-0 rounded-full border border-border object-cover" />
+        ) : (
+          <div className="grid h-14 w-14 shrink-0 place-items-center rounded-full border border-dashed border-border bg-surface-elevated text-muted-foreground">
+            <UserRound className="h-6 w-6" />
+          </div>
+        )}
         <div className="flex-1">
           <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-muted-foreground">
             Profile picture <span className="normal-case text-muted-foreground">(optional)</span>
