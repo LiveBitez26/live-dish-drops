@@ -16,6 +16,7 @@ import {
   updateMyAvatar,
 } from "@/lib/api/customer-profile";
 import { cn } from "@/lib/utils";
+import { uploadImage } from "@/lib/storage";
 
 export const Route = createFileRoute("/account")({
   component: AccountPage,
@@ -91,7 +92,26 @@ function ProfileHeader({ profile }: { profile: any }) {
   const [fullName, setFullName] = useState(profile.full_name ?? "");
   const [phone, setPhone] = useState(profile.phone_number ?? "");
   const [avatarUrl, setAvatarUrl] = useState(profile.avatar_url ?? "");
+  const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image too large — please choose one under 5MB");
+      return;
+    }
+    setUploading(true);
+    try {
+      const url = await uploadImage(file, "avatars", profile.id);
+      setAvatarUrl(url);
+    } catch (err) {
+      toast.error("Upload failed", { description: (err as Error).message });
+    } finally {
+      setUploading(false);
+    }
+  }
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
@@ -145,18 +165,20 @@ function ProfileHeader({ profile }: { profile: any }) {
         <img
           src={avatarUrl || `https://i.pravatar.cc/100?u=${profile.id}`}
           alt=""
-          className="h-14 w-14 rounded-full border border-border object-cover"
+          className="h-14 w-14 shrink-0 rounded-full border border-border object-cover"
         />
         <div className="flex-1">
           <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-muted-foreground">
-            Profile picture URL
+            Profile picture <span className="normal-case text-muted-foreground">(optional)</span>
           </label>
           <input
-            value={avatarUrl}
-            onChange={(e) => setAvatarUrl(e.target.value)}
-            placeholder="https://…"
-            className="w-full rounded-lg border border-border bg-surface-elevated px-3 py-2 text-sm"
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+            disabled={uploading}
+            className="block w-full text-xs text-muted-foreground file:mr-3 file:rounded-full file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-xs file:font-bold file:text-primary-foreground"
           />
+          {uploading && <p className="mt-1 text-xs text-muted-foreground">Uploading…</p>}
         </div>
       </div>
       <div>
@@ -195,7 +217,7 @@ function ProfileHeader({ profile }: { profile: any }) {
       <div className="flex gap-2">
         <button
           type="submit"
-          disabled={saving}
+          disabled={saving || uploading}
           className="rounded-full bg-primary px-4 py-1.5 text-sm font-bold text-primary-foreground disabled:opacity-50"
         >
           {saving ? "Saving…" : "Save"}

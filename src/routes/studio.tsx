@@ -22,6 +22,7 @@ import { useRealtimeOrders, useRequestNotificationPermission } from "@/hooks/use
 import { useAgoraBroadcast } from "@/hooks/use-agora-broadcast";
 import { updateOrderStatus } from "@/lib/api/orders";
 import { updateCreatorProfile } from "@/lib/api/creator-profile";
+import { uploadImage } from "@/lib/storage";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useRef } from "react";
 
@@ -499,13 +500,34 @@ function ToggleSwitch({
 }
 
 function EditProfilePanel({ creatorId }: { creatorId: string }) {
+  const { profile } = useAuth();
   const [open, setOpen] = useState(false);
   const [bio, setBio] = useState("");
   const [location, setLocation] = useState("");
   const [bannerUrl, setBannerUrl] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
   const [deliveryRadius, setDeliveryRadius] = useState("5");
+  const [uploading, setUploading] = useState<"avatar" | "banner" | null>(null);
   const [saving, setSaving] = useState(false);
+
+  async function handleUpload(e: React.ChangeEvent<HTMLInputElement>, kind: "avatar" | "banner") {
+    const file = e.target.files?.[0];
+    if (!file || !(profile as any)?.id) return;
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image too large — please choose one under 5MB");
+      return;
+    }
+    setUploading(kind);
+    try {
+      const url = await uploadImage(file, kind === "avatar" ? "avatars" : "banners", (profile as any).id);
+      if (kind === "avatar") setAvatarUrl(url);
+      else setBannerUrl(url);
+    } catch (err) {
+      toast.error("Upload failed", { description: (err as Error).message });
+    } finally {
+      setUploading(null);
+    }
+  }
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
@@ -563,25 +585,31 @@ function EditProfilePanel({ creatorId }: { creatorId: string }) {
           </div>
           <div>
             <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-muted-foreground">
-              Avatar image URL
+              Avatar photo <span className="normal-case text-muted-foreground">(optional)</span>
             </label>
+            {avatarUrl && <img src={avatarUrl} alt="" className="mb-1.5 h-12 w-12 rounded-full object-cover" />}
             <input
-              value={avatarUrl}
-              onChange={(e) => setAvatarUrl(e.target.value)}
-              className="w-full rounded-lg border border-border bg-surface-elevated px-3 py-2 text-sm"
-              placeholder="https://…"
+              type="file"
+              accept="image/*"
+              onChange={(e) => handleUpload(e, "avatar")}
+              disabled={uploading === "avatar"}
+              className="block w-full text-xs text-muted-foreground file:mr-3 file:rounded-full file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-xs file:font-bold file:text-primary-foreground"
             />
+            {uploading === "avatar" && <p className="mt-1 text-xs text-muted-foreground">Uploading…</p>}
           </div>
           <div>
             <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-muted-foreground">
-              Banner image URL
+              Banner photo <span className="normal-case text-muted-foreground">(optional)</span>
             </label>
+            {bannerUrl && <img src={bannerUrl} alt="" className="mb-1.5 h-16 w-full rounded-lg object-cover" />}
             <input
-              value={bannerUrl}
-              onChange={(e) => setBannerUrl(e.target.value)}
-              className="w-full rounded-lg border border-border bg-surface-elevated px-3 py-2 text-sm"
-              placeholder="https://…"
+              type="file"
+              accept="image/*"
+              onChange={(e) => handleUpload(e, "banner")}
+              disabled={uploading === "banner"}
+              className="block w-full text-xs text-muted-foreground file:mr-3 file:rounded-full file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-xs file:font-bold file:text-primary-foreground"
             />
+            {uploading === "banner" && <p className="mt-1 text-xs text-muted-foreground">Uploading…</p>}
           </div>
           <div>
             <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-muted-foreground">
