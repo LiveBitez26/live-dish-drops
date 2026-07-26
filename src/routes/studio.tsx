@@ -9,6 +9,7 @@ import {
   MicOff,
   Radio,
   Settings,
+  Trash2,
   Users,
   Video,
   VideoOff,
@@ -22,6 +23,7 @@ import { useRealtimeOrders, useRequestNotificationPermission } from "@/hooks/use
 import { useAgoraBroadcast } from "@/hooks/use-agora-broadcast";
 import { updateOrderStatus } from "@/lib/api/orders";
 import { updateCreatorProfile } from "@/lib/api/creator-profile";
+import { createPost, getMyPosts, deletePost } from "@/lib/api/posts";
 import { uploadImage } from "@/lib/storage";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useRef } from "react";
@@ -226,6 +228,7 @@ function StudioDashboard() {
         )}
 
         {creatorId && <EditProfilePanel creatorId={creatorId} />}
+        {creatorId && <CreatePostPanel creatorId={creatorId} />}
 
         <div className="grid gap-5 lg:grid-cols-[1fr_360px]">
           {/* LEFT: Camera + controls */}
@@ -675,6 +678,210 @@ function EditProfilePanel({ creatorId }: { creatorId: string }) {
             {saving ? "Saving…" : "Save profile"}
           </button>
         </form>
+      )}
+    </div>
+  );
+}
+
+function CreatePostPanel({ creatorId }: { creatorId: string }) {
+  const { profile } = useAuth();
+  const [open, setOpen] = useState(false);
+  const [posts, setPosts] = useState<any[]>([]);
+  const [loadedPosts, setLoadedPosts] = useState(false);
+
+  const [contentType, setContentType] = useState<"photo" | "video" | "upcoming_drop">("photo");
+  const [mediaUrl, setMediaUrl] = useState("");
+  const [caption, setCaption] = useState("");
+  const [dropTime, setDropTime] = useState("");
+  const [price, setPrice] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [posting, setPosting] = useState(false);
+
+  async function refreshPosts() {
+    setPosts(await getMyPosts({ data: { creatorId } }));
+    setLoadedPosts(true);
+  }
+
+  useEffect(() => {
+    if (open && !loadedPosts) refreshPosts();
+  }, [open, loadedPosts]);
+
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file || !(profile as any)?.id) return;
+    if (file.size > 20 * 1024 * 1024) {
+      toast.error("File too large — please choose one under 20MB");
+      return;
+    }
+    setUploading(true);
+    try {
+      const url = await uploadImage(file, "posts", (profile as any).id);
+      setMediaUrl(url);
+    } catch (err) {
+      toast.error("Upload failed", { description: (err as Error).message });
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  async function handlePost(e: React.FormEvent) {
+    e.preventDefault();
+    if (!mediaUrl) {
+      toast.error("Add a photo or video first");
+      return;
+    }
+    setPosting(true);
+    try {
+      await createPost({
+        data: {
+          creatorId,
+          contentType,
+          mediaUrl,
+          caption: caption || undefined,
+          dropTime: contentType === "upcoming_drop" && dropTime ? new Date(dropTime).toISOString() : undefined,
+          price: contentType === "upcoming_drop" && price ? Number(price) : undefined,
+        },
+      });
+      toast.success("Posted!");
+      setMediaUrl("");
+      setCaption("");
+      setDropTime("");
+      setPrice("");
+      refreshPosts();
+    } catch (err) {
+      toast.error("Couldn't post", { description: (err as Error).message });
+    } finally {
+      setPosting(false);
+    }
+  }
+
+  return (
+    <div className="mb-4 rounded-2xl border border-border bg-surface">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center justify-between px-4 py-3 text-sm font-black uppercase tracking-widest text-muted-foreground"
+      >
+        Daily Feed posts
+        <span className="text-xs">{open ? "Hide" : "Show"}</span>
+      </button>
+      {open && (
+        <div className="border-t border-border p-4">
+          <form onSubmit={handlePost} className="space-y-3">
+            <div>
+              <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                Post type
+              </label>
+              <div className="flex gap-2">
+                {(["photo", "video", "upcoming_drop"] as const).map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setContentType(t)}
+                    className={cn(
+                      "rounded-full px-3 py-1.5 text-xs font-bold",
+                      contentType === t
+                        ? "bg-primary text-primary-foreground"
+                        : "border border-border text-muted-foreground"
+                    )}
+                  >
+                    {t === "photo" ? "Photo" : t === "video" ? "Video clip" : "Upcoming drop"}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                {contentType === "video" ? "Video" : "Photo"}
+              </label>
+              {mediaUrl && (
+                <img src={mediaUrl} alt="" className="mb-1.5 h-24 w-24 rounded-lg object-cover" />
+              )}
+              <input
+                type="file"
+                accept={contentType === "video" ? "video/*" : "image/*"}
+                onChange={handleFileChange}
+                disabled={uploading}
+                className="block w-full text-xs text-muted-foreground file:mr-3 file:rounded-full file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-xs file:font-bold file:text-primary-foreground"
+              />
+              {uploading && <p className="mt-1 text-xs text-muted-foreground">Uploading…</p>}
+            </div>
+
+            <div>
+              <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                Caption
+              </label>
+              <textarea
+                value={caption}
+                onChange={(e) => setCaption(e.target.value)}
+                rows={2}
+                maxLength={300}
+                className="w-full rounded-lg border border-border bg-surface-elevated px-3 py-2 text-sm"
+                placeholder="What are you cooking?"
+              />
+            </div>
+
+            {contentType === "upcoming_drop" && (
+              <>
+                <div>
+                  <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                    Drop time
+                  </label>
+                  <input
+                    type="datetime-local"
+                    value={dropTime}
+                    onChange={(e) => setDropTime(e.target.value)}
+                    className="w-full rounded-lg border border-border bg-surface-elevated px-3 py-2 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                    Price ($)
+                  </label>
+                  <input
+                    type="number"
+                    min={0}
+                    step={0.5}
+                    value={price}
+                    onChange={(e) => setPrice(e.target.value)}
+                    className="w-32 rounded-lg border border-border bg-surface-elevated px-3 py-2 text-sm"
+                  />
+                </div>
+              </>
+            )}
+
+            <button
+              type="submit"
+              disabled={posting || uploading}
+              className="rounded-full bg-primary px-4 py-2 text-sm font-bold text-primary-foreground disabled:opacity-50"
+            >
+              {posting ? "Posting…" : "Post to Daily Feed"}
+            </button>
+          </form>
+
+          {posts.length > 0 && (
+            <div className="mt-5 border-t border-border pt-4">
+              <p className="mb-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">Your posts</p>
+              <div className="grid grid-cols-4 gap-2">
+                {posts.map((p) => (
+                  <div key={p.id} className="group relative overflow-hidden rounded-lg">
+                    <img src={p.media_url} alt="" className="aspect-square w-full object-cover" />
+                    <button
+                      onClick={async () => {
+                        await deletePost({ data: { postId: p.id } });
+                        toast("Post removed");
+                        refreshPosts();
+                      }}
+                      className="absolute inset-0 hidden items-center justify-center bg-black/60 text-white group-hover:flex"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       )}
     </div>
   );
