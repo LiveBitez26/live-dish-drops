@@ -21,6 +21,7 @@ import { useMenuItems, setMenuItemAvailability } from "@/hooks/use-menu-items";
 import { useRealtimeOrders, useRequestNotificationPermission } from "@/hooks/use-realtime-orders";
 import { useAgoraBroadcast } from "@/hooks/use-agora-broadcast";
 import { updateOrderStatus } from "@/lib/api/orders";
+import { updateCreatorProfile } from "@/lib/api/creator-profile";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useRef } from "react";
 
@@ -199,9 +200,20 @@ function StudioDashboard() {
           >
             <ArrowLeft className="h-4 w-4" /> Exit studio
           </Link>
-          <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-            Creator Studio
-          </span>
+          <div className="flex items-center gap-3">
+            {creatorId && (
+              <Link
+                to="/creator/$id"
+                params={{ id: creatorId }}
+                className="text-xs font-bold uppercase tracking-widest text-primary hover:underline"
+              >
+                View public profile
+              </Link>
+            )}
+            <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+              Creator Studio
+            </span>
+          </div>
         </div>
 
         {!isVerified && (
@@ -211,6 +223,8 @@ function StudioDashboard() {
               : "Your kitchen details are pending review. You can build your menu, but you can't go live until you're approved."}
           </div>
         )}
+
+        {creatorId && <EditProfilePanel creatorId={creatorId} />}
 
         <div className="grid gap-5 lg:grid-cols-[1fr_360px]">
           {/* LEFT: Camera + controls */}
@@ -481,5 +495,117 @@ function ToggleSwitch({
         )}
       />
     </button>
+  );
+}
+
+function EditProfilePanel({ creatorId }: { creatorId: string }) {
+  const [open, setOpen] = useState(false);
+  const [bio, setBio] = useState("");
+  const [location, setLocation] = useState("");
+  const [bannerUrl, setBannerUrl] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState("");
+  const [deliveryRadius, setDeliveryRadius] = useState("5");
+  const [saving, setSaving] = useState(false);
+
+  async function handleSave(e: React.FormEvent) {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      await updateCreatorProfile({
+        data: {
+          creatorId,
+          bio: bio || undefined,
+          location: location || undefined,
+          bannerUrl: bannerUrl || undefined,
+          avatarUrl: avatarUrl || undefined,
+          deliveryRadiusMiles: Number(deliveryRadius) || undefined,
+        },
+      });
+      toast.success("Profile updated");
+      setOpen(false);
+    } catch (err) {
+      toast.error("Couldn't save profile", { description: (err as Error).message });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="mb-4 rounded-2xl border border-border bg-surface">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center justify-between px-4 py-3 text-sm font-black uppercase tracking-widest text-muted-foreground"
+      >
+        Edit profile
+        <span className="text-xs">{open ? "Hide" : "Show"}</span>
+      </button>
+      {open && (
+        <form onSubmit={handleSave} className="space-y-3 border-t border-border p-4">
+          <div>
+            <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-muted-foreground">Bio</label>
+            <textarea
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+              rows={2}
+              maxLength={500}
+              className="w-full rounded-lg border border-border bg-surface-elevated px-3 py-2 text-sm"
+              placeholder="Tell customers about your kitchen…"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-muted-foreground">Location</label>
+            <input
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              className="w-full rounded-lg border border-border bg-surface-elevated px-3 py-2 text-sm"
+              placeholder="e.g. Los Angeles, CA"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-muted-foreground">
+              Avatar image URL
+            </label>
+            <input
+              value={avatarUrl}
+              onChange={(e) => setAvatarUrl(e.target.value)}
+              className="w-full rounded-lg border border-border bg-surface-elevated px-3 py-2 text-sm"
+              placeholder="https://…"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-muted-foreground">
+              Banner image URL
+            </label>
+            <input
+              value={bannerUrl}
+              onChange={(e) => setBannerUrl(e.target.value)}
+              className="w-full rounded-lg border border-border bg-surface-elevated px-3 py-2 text-sm"
+              placeholder="https://…"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-muted-foreground">
+              Delivery radius (miles)
+            </label>
+            <input
+              type="number"
+              min={0.5}
+              max={50}
+              step={0.5}
+              value={deliveryRadius}
+              onChange={(e) => setDeliveryRadius(e.target.value)}
+              className="w-32 rounded-lg border border-border bg-surface-elevated px-3 py-2 text-sm"
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={saving}
+            className="rounded-full bg-primary px-4 py-2 text-sm font-bold text-primary-foreground disabled:opacity-50"
+          >
+            {saving ? "Saving…" : "Save profile"}
+          </button>
+        </form>
+      )}
+    </div>
   );
 }
